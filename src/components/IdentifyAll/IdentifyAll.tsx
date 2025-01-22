@@ -5,10 +5,6 @@ import FeatureList from "../FeatureList/FeatureList";
 import { 
   CalciteSegmentedControl, 
   CalciteSegmentedControlItem,
-  CalciteList,
-  CalciteListItem,
-  CalciteAction,
-  CalciteButton
 } from '@esri/calcite-components-react';
 
 // Sample configuration

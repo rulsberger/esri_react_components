@@ -1,5 +1,4 @@
 import React from "react";
-import "@esri/calcite-components/dist/calcite/calcite.css";
 import {
     CalciteButton,  
     CalciteList,
