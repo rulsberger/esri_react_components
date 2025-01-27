@@ -6,6 +6,9 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "paths": {
+      "@arcgis/core/*": ["./node_modules/@arcgis/core/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

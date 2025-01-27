@@ -1,4 +1,9 @@
 import React from "react";
+import "@esri/calcite-components/dist/components/calcite-button.js";
+import "@esri/calcite-components/dist/components/calcite-list.js";
+import "@esri/calcite-components/dist/components/calcite-list-item-group.js";
+import "@esri/calcite-components/dist/components/calcite-list-item.js";
+import "@esri/calcite-components/dist/components/calcite-action.js";
 import {
     CalciteButton,  
     CalciteList,
@@ -54,17 +59,18 @@ const FeatureList: React.FC<FeatureListProps> = ({ layers, onClearSelection }) =
             <CalciteList filterEnabled>
                 {layers.map((layer) => (
                 <CalciteListItemGroup
+                    key = {layer.name}
                     heading={layer.name}
                 >
                     <CalciteList>
                     {layer.features.map((feature) => (
                         <CalciteListItem
-                            key={feature.id}
+                            key={String(layer.name) + '_' + String(feature.id)}
                             label={feature.label}
                             description={Object.entries(feature)
                                 .filter(([key]) => key !== "id" && key !== "name")
                                 .map(([key, value]) => `${key}: ${value}`)
-                                .join(", ")}
+                                .join(", ")} //ToDo: Render the items in a list rather than tabbed here
                             value={String(feature.label)}  
                             closable
                             // ToDo: On hover/click, highlight this feature

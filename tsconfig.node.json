@@ -5,6 +5,9 @@
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "paths": {
+      "@arcgis/core/*": ["./node_modules/@arcgis/core/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

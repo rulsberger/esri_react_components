@@ -1,8 +1,0 @@
-[slot="content-bottom"] {
-    display: none;
-    padding: 0.5rem;
-}
-
-calcite-list-item[selected] [slot="content-bottom"] {
-    display: block;
-}
