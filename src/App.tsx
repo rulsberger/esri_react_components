@@ -32,7 +32,8 @@ export default function App() {
         <CalciteShellPanel           
             slot="panel-start"
             position="start"
-            id="left-shell-panel">
+            id="left-shell-panel"
+            widthScale="2">
             <CalcitePanel heading="Identify All">
             {<IdentifyAll mapView={mapView} />}
             </CalcitePanel>
