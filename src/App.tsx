@@ -15,17 +15,27 @@ import IdentifyAll from "./components/IdentifyAll/IdentifyAll";
 export default function App() {
   const mapDiv = useRef<HTMLDivElement>(null);
   const [mapView, setMapView] = useState<__esri.MapView | null>(null); // State to store MapView
+  const [loading, setLoading] = useState(true);  // State to manage loading state
 
   useEffect(() => {
-    if (mapDiv.current) {
-      import("./libs/mapping").then((mapping) => {
-        const view = mapping.init(mapDiv.current!);
-        setMapView(view);
-      });
-
-    }
-  }, [mapDiv]);
-
+    let cleanupFn: () => void; // To store the cleanup function
+  
+    (async () => {
+      try {
+        const mapping = await import("./libs/mapping");
+        const view = await mapping.init(mapDiv.current!); // Initialize the MapView
+        setMapView(view); // Store the MapView in state
+  
+        cleanupFn = mapping.cleanup; // Save the cleanup function for later
+      } catch (error) {
+        console.error("Error initializing map:", error);
+      }
+    })();
+  
+    return () => {
+      if (cleanupFn) cleanupFn(); // Destroy the MapView when the component unmounts
+    };
+  }, []);
   return (
     <div className="h-full w-full">
       <CalciteShell id="mainCalciteShell">
@@ -35,7 +45,11 @@ export default function App() {
             id="left-shell-panel"
             widthScale="2">
             <CalcitePanel heading="Identify All">
-            {<IdentifyAll mapView={mapView} />}
+            {mapView ? (
+              <IdentifyAll mapView={mapView} />
+            ) : (
+              <p>Loading map...</p>  // Fallback UI while the map initializes
+            )}
             </CalcitePanel>
         </CalciteShellPanel>
         <div className="h-full w-full" ref={mapDiv}></div>

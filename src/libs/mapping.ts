@@ -26,9 +26,9 @@ export async function init(container: HTMLDivElement) {
 
   app.view = view;
 
-  return cleanup;
+  return view;
 }
 
-function cleanup() {
+export function cleanup() {
   app.view?.destroy();
 }

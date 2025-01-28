@@ -1,4 +1,4 @@
-import React, { useRef,  useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import DrawWidget from "../DrawWidgets/DrawWidget";
 import FeatureList from "../FeatureList/FeatureList";
 import { GeometryManager } from "../../utils/GeometryManager"
@@ -34,10 +34,30 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
   const [activeView, setActiveView] = useState("Identify");
   const geometryManagerRef = useRef<GeometryManager | null>(null);
 
-  // Initialize GeometryManager
-  if (!geometryManagerRef.current) {
-    geometryManagerRef.current = new GeometryManager(mapView);
-  }
+  // Track mapView readiness and initialize GeometryManager
+  useEffect(() => {
+    const initializeIdentifyAll = async () => {
+      try {
+        if (mapView) {
+          await mapView.when();
+          if (!geometryManagerRef.current) {
+            geometryManagerRef.current = new GeometryManager(mapView); // Initialize GeometryManager once mapView is ready
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing identifyAll Tool:', error);
+      }
+    };
+
+    initializeIdentifyAll();
+
+    return () => {
+      if (geometryManagerRef.current) {
+        geometryManagerRef.current.destroy();
+      }
+    };
+  
+  }, [mapView]);
 
   const handleToolSelect = async (tool: string) => {
     console.log(`Selected tool: ${tool}`);
@@ -80,6 +100,27 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
         { id: 2, label: "San Francisco Bay", description: "Located in Northern California", properties: {}}
       ],
     },
+    {
+      name: "Waterfalls",
+      features: [
+        { id: 1, label: "Niagara Falls", description: "Located on the border between the US and Canada", properties: {} },
+        { id: 2, label: "Victoria Falls", description: "Located on the border between Zambia and Zimbabwe", properties: {}},
+      ],
+    },
+    {
+      name: "Rivers",
+      features: [
+        { id: 1, label: "Amazon River", description: "The largest river by discharge in the world",  properties: {} },
+        { id: 2, label: "Nile River", description: "The longest river in the world", properties: {} },
+      ],
+    },
+    {
+      name: "Estuaries",
+      features: [
+        { id: 1, label: "Chesapeake Bay", description: "Located on the east coast of the US",  properties: {} },
+        { id: 2, label: "San Francisco Bay", description: "Located in Northern California", properties: {}}
+      ],
+    },
   ]);
 
   return (
@@ -87,13 +128,13 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
         {/* Segmented Control */}
         <CalciteSegmentedControl>
             <CalciteSegmentedControlItem 
-                                value="Identify"
-                                checked={activeView === 'Identify'}
-                                onClick={() => setActiveView('Identify')}
+                value="Identify"
+                {...(activeView === "Identify" ? { checked: true } : {})}
+                onClick={() => setActiveView('Identify')}
             >Identify</CalciteSegmentedControlItem>
             <CalciteSegmentedControlItem
                 value="Results"
-                checked={activeView === 'Results'}
+                {...(activeView === "Results" ? { checked: true } : {})}
                 onClick={() => setActiveView('Results')}
             >
                 Results
@@ -102,7 +143,7 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
         {/* Main Section */}
         <section>
             {activeView === 'Identify' && (
-                <DrawWidget onToolSelect={handleToolSelect} onClearSelection={handleClearSelection} />
+                <DrawWidget mapView={mapView} onToolSelect={handleToolSelect} onClearSelection={handleClearSelection} />
             )}
             {activeView === 'Results' && (
                 <FeatureList layers={layers} onClearSelection={handleClearSelection} />
