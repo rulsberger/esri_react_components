@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import DrawWidget from "../DrawWidgets/DrawWidget";
 import FeatureList from "../FeatureList/FeatureList";
-import { GeometryManager } from "../../utils/GeometryManager"
+import { queryByGeometry } from "../../libs/queryByGeometry"
 
 import { 
   CalciteSegmentedControl,
@@ -32,7 +32,8 @@ interface FeatureListProps {
 
 const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
   const [activeView, setActiveView] = useState("Identify");
-  const geometryManagerRef = useRef<GeometryManager | null>(null);
+  const [geometry, setGeometry] = useState<__esri.Geometry | null>(null);
+  const [results, setResults] = useState<LayerQueryResults[]>([])
 
   // Track mapView readiness and initialize GeometryManager
   useEffect(() => {
@@ -40,9 +41,6 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
       try {
         if (mapView) {
           await mapView.when();
-          if (!geometryManagerRef.current) {
-            geometryManagerRef.current = new GeometryManager(mapView); // Initialize GeometryManager once mapView is ready
-          }
         }
       } catch (error) {
         console.error('Error initializing identifyAll Tool:', error);
@@ -52,32 +50,26 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
     initializeIdentifyAll();
 
     return () => {
-      if (geometryManagerRef.current) {
-        geometryManagerRef.current.destroy();
-      }
     };
   
   }, [mapView]);
 
-  const handleToolSelect = async (tool: string) => {
-    console.log(`Selected tool: ${tool}`);
-    const geometry = await geometryManagerRef.current?.activateTool(tool);
-    if (geometry) {
-      console.log("Geometry created:", geometry);
-      // Perform a query using the geometry
-      const queriedLayers = await geometryManagerRef.current?.queryLayers(geometry);
-      if (queriedLayers) {
-        setLayers(queriedLayers);
-      }
-    }
-  };
-
   const handleClearSelection = () => {
     console.log("Clear Selection");
     setLayers([]);
-    geometryManagerRef.current?.clearGraphics();
   };
   
+  // Callback to handle the drawn geometry from DrawWidget
+  const handleOnDrawComplete = (geom: __esri.Geometry, onlyVisibleLayers: boolean) => {
+    console.log("Geometry received in IdentifyAll:", geom);
+    if (onlyVisibleLayers) {
+      console.log("Querying visible layers only");
+    }
+
+    setGeometry(geom); // Store the geometry in state
+    queryByGeometry(mapView, geom, onlyVisibleLayers).then(setResults);
+  };
+
   const [layers, setLayers] = useState<Layer[]>([
     {
       name: "Waterfalls",
@@ -143,10 +135,11 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
         {/* Main Section */}
         <section>
             {activeView === 'Identify' && (
-                <DrawWidget mapView={mapView} onToolSelect={handleToolSelect} onClearSelection={handleClearSelection} />
+                <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
             )}
             {activeView === 'Results' && (
-                <FeatureList layers={layers} onClearSelection={handleClearSelection} />
+                <FeatureList mapView={mapView} data={results} onClearSelection={handleClearSelection}/>
+                // <FeatureList layers={layers} onClearSelection={handleClearSelection} />
             )}
         </section>
     </div>

@@ -9,7 +9,11 @@ import {
   CalciteButton,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem,
+  CalciteCheckbox,
+  CalciteLabel
 } from "@esri/calcite-components-react";
+
+// ToDo: Create better interface instance for toolType with ESRI Geometry Point, Line, Polygon
 
 interface DrawWidgetProps {
   mapView: __esri.MapView;
@@ -19,18 +23,19 @@ interface DrawWidgetProps {
 const DrawWidget: React.FC<DrawWidgetProps> = ({
   mapView,
   onDrawComplete,
+  // handleClearSelection //This needs to be passed as a callback.
 }) => {
   const drawRef = useRef<__esri.Draw | null>(null);
   const [isDrawReady, setIsDrawReady] = useState(false);
   const [graphicsLayer, setGraphicsLayer] = useState<GraphicsLayer | null>(null);
   const [activeTool, setActiveTool] = useState<"point" | "polyline" | "polygon" | null>(null);
-
+  const [onlyVisibleLayers, setOnlyVisibleLayers] = useState(true);
 
   // Use effect for async initialization
   useEffect(() => {
     const initializeDrawTool = async () => {
       try {
-        if (mapView) {
+        if (mapView) { 
           await mapView.when();
           drawRef.current = new Draw({ view: mapView });
           setGraphicsLayer(mapView.graphics);
@@ -50,9 +55,12 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     };
   }, [mapView]); // Watch for changes to mapView
 
+  mapView.ready
+
+
+
   const activateTool = (toolType: "point" | "polyline" | "polygon") => {
     if (!drawRef.current || !isDrawReady || !graphicsLayer) {
-      console.error(`Draw tool not ready ${drawRef.current} ${isDrawReady} ${graphicsLayer}`);
       return;
     }
 
@@ -74,8 +82,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
           symbol: getSymbol(toolType),
         });
         graphicsLayer.add(graphic);
-        console.log(geometry)
-        // onDrawComplete(geometry);
+        onDrawComplete(geometry, onlyVisibleLayers);
       }
     });
   };
@@ -123,6 +130,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     }
   };
 
+  // ToDo: Fix TypeScript errors for __esri.SimpleMarkerSymbol
   const getSymbol = (toolType: "point" | "polyline" | "polygon"): __esri.Symbol => {
     switch (toolType) {
       case "point":
@@ -155,6 +163,8 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     }
   };
 
+
+  // ToDo: Potentially move this out of this function. When the Clear Selection is called this needs to cascade to all the state.
   const handleClearSelection = () => {
     if (graphicsLayer) {
       graphicsLayer.removeAll();
@@ -162,49 +172,67 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     }
   };
 
+  const handleCheckboxChange = (event: any) => {
+    setOnlyVisibleLayers(event.target.checked);
+  };
+
   return (
     <section className="p-4">
-      <p className="text-sm">Use the identify tool to identify features on the map:</p>
-      <div className="flex items-center mb-5">
-          
-          <CalciteSegmentedControl>
-            <CalciteSegmentedControlItem
-              value="Point"
-              iconStart="point"
-              onClick={() => activateTool("point")}
-              {...(activeTool === "point" ? { checked: true } : {})}
-            >
-              Point
-            </CalciteSegmentedControlItem>
-            <CalciteSegmentedControlItem
-              value="Line"
-              iconStart="line"
-              onClick={() => activateTool("polyline")}
-              {...(activeTool === "polyline" ? { checked: true } : {})}
-            >
-              Line
-            </CalciteSegmentedControlItem>
-            <CalciteSegmentedControlItem
-              value="Polygon"
-              iconStart="polygon"
-              onClick={() => activateTool("polygon")}
-              {...(activeTool === "polygon" ? { checked: true } : {})}
-            >
-              Polygon
-            </CalciteSegmentedControlItem>
-            {/* <CalciteSegmentedControlItem
-              value="Circle"
-              iconStart="circle"
-              onClick={() => activateTool("circle")}
-              {...(activeTool === "circle" ? { checked: true } : {})}
-            >
-              Circle
-            </CalciteSegmentedControlItem> */}
-          </CalciteSegmentedControl>
-        <CalciteButton iconStart="reset" onClick={handleClearSelection}>
-          Clear Selection
-        </CalciteButton>
-      </div>
+      <div>
+          <CalciteLabel layout="inline-space-between">
+            Drawing Tool:
+            <CalciteSegmentedControl>
+              <CalciteSegmentedControlItem
+                value="Point"
+                iconStart="point"
+                onClick={() => activateTool("point")}
+                {...(activeTool === "point" ? { checked: true } : {})}
+              >
+                Point
+              </CalciteSegmentedControlItem>
+              <CalciteSegmentedControlItem
+                value="Line"
+                iconStart="line"
+                onClick={() => activateTool("polyline")}
+                {...(activeTool === "polyline" ? { checked: true } : {})}
+              >
+                Line
+              </CalciteSegmentedControlItem>
+              <CalciteSegmentedControlItem
+                value="Polygon"
+                iconStart="polygon"
+                onClick={() => activateTool("polygon")}
+                {...(activeTool === "polygon" ? { checked: true } : {})}
+              >
+                Polygon
+              </CalciteSegmentedControlItem>
+              {/* <CalciteSegmentedControlItem
+                value="Circle"
+                iconStart="circle"
+                onClick={() => activateTool("circle")}
+                {...(activeTool === "circle" ? { checked: true } : {})}
+              >
+                Circle
+              </CalciteSegmentedControlItem> */}
+            </CalciteSegmentedControl>
+          </CalciteLabel>
+        </div>
+        <div>
+          {/* TODO Make Sure that this checkbox is visible */}
+          <CalciteLabel>
+            Query Only Visible Layers:
+            <CalciteCheckbox 
+                      checked={onlyVisibleLayers}
+                      onCalciteCheckboxChange={handleCheckboxChange}
+            ></CalciteCheckbox>
+          </CalciteLabel>
+          <CalciteButton iconStart="reset" onClick={handleClearSelection}>
+            Clear Selection
+          </CalciteButton>
+        </div>                                                               
+
+
+
     </section>
   );
 };

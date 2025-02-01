@@ -14,7 +14,9 @@ export async function init(container: HTMLDivElement) {
   }
 
   const webMap = new WebMap({
-      basemap: 'streets-navigation-vector',
+      portalItem: {
+        id: "3f9ccddd607246779286e96847845c3f"
+      }
   });
 
   const view = new MapView({
