@@ -2,28 +2,32 @@ import React, { useEffect, useRef, useState } from "react";
 import Draw from "@arcgis/core/views/draw/Draw";
 import Graphic from "@arcgis/core/Graphic";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
-import "@esri/calcite-components/dist/components/calcite-button.js";
+import "@esri/calcite-components/dist/components/calcite-label.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
+import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js"
+import "@esri/calcite-components/dist/components/calcite-checkbox.js";
 import {
-  CalciteButton,
+  CalciteLabel,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem,
-  CalciteCheckbox,
-  CalciteLabel
+  CalciteCheckbox
 } from "@esri/calcite-components-react";
+
+import Point from "@arcgis/core/geometry/Point";
+import Polyline from "@arcgis/core/geometry/Polyline";
+import Polygon from "@arcgis/core/geometry/Polygon";
 
 // ToDo: Create better interface instance for toolType with ESRI Geometry Point, Line, Polygon
 
 interface DrawWidgetProps {
   mapView: __esri.MapView;
-  onDrawComplete: (geometry: __esri.Geometry) => void;
+  onDrawComplete: (geometry: __esri.Geometry, onlyVisibleLayers: boolean) => void;
 }
 
 const DrawWidget: React.FC<DrawWidgetProps> = ({
   mapView,
   onDrawComplete,
-  // handleClearSelection //This needs to be passed as a callback.
 }) => {
   const drawRef = useRef<__esri.Draw | null>(null);
   const [isDrawReady, setIsDrawReady] = useState(false);
@@ -163,15 +167,6 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     }
   };
 
-
-  // ToDo: Potentially move this out of this function. When the Clear Selection is called this needs to cascade to all the state.
-  const handleClearSelection = () => {
-    if (graphicsLayer) {
-      graphicsLayer.removeAll();
-      setActiveTool(null);
-    }
-  };
-
   const handleCheckboxChange = (event: any) => {
     setOnlyVisibleLayers(event.target.checked);
   };
@@ -226,9 +221,6 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
                       onCalciteCheckboxChange={handleCheckboxChange}
             ></CalciteCheckbox>
           </CalciteLabel>
-          <CalciteButton iconStart="reset" onClick={handleClearSelection}>
-            Clear Selection
-          </CalciteButton>
         </div>                                                               
 
 

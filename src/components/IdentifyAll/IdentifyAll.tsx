@@ -4,6 +4,7 @@ import FeatureList from "../FeatureList/FeatureList";
 import { queryByGeometry } from "../../libs/queryByGeometry"
 
 import { 
+  CalciteButton,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem
   } from "@esri/calcite-components-react";
@@ -56,11 +57,13 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
 
   const handleClearSelection = () => {
     console.log("Clear Selection");
-    setLayers([]);
+    setResults([]);
+    mapView.graphics.removeAll();
   };
   
   // Callback to handle the drawn geometry from DrawWidget
   const handleOnDrawComplete = (geom: __esri.Geometry, onlyVisibleLayers: boolean) => {
+    setResults([]);
     console.log("Geometry received in IdentifyAll:", geom);
     if (onlyVisibleLayers) {
       console.log("Querying visible layers only");
@@ -68,52 +71,8 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
 
     setGeometry(geom); // Store the geometry in state
     queryByGeometry(mapView, geom, onlyVisibleLayers).then(setResults);
+    setActiveView('Results')
   };
-
-  const [layers, setLayers] = useState<Layer[]>([
-    {
-      name: "Waterfalls",
-      features: [
-        { id: 1, label: "Niagara Falls", description: "Located on the border between the US and Canada", properties: {} },
-        { id: 2, label: "Victoria Falls", description: "Located on the border between Zambia and Zimbabwe", properties: {}},
-      ],
-    },
-    {
-      name: "Rivers",
-      features: [
-        { id: 1, label: "Amazon River", description: "The largest river by discharge in the world",  properties: {} },
-        { id: 2, label: "Nile River", description: "The longest river in the world", properties: {} },
-      ],
-    },
-    {
-      name: "Estuaries",
-      features: [
-        { id: 1, label: "Chesapeake Bay", description: "Located on the east coast of the US",  properties: {} },
-        { id: 2, label: "San Francisco Bay", description: "Located in Northern California", properties: {}}
-      ],
-    },
-    {
-      name: "Waterfalls",
-      features: [
-        { id: 1, label: "Niagara Falls", description: "Located on the border between the US and Canada", properties: {} },
-        { id: 2, label: "Victoria Falls", description: "Located on the border between Zambia and Zimbabwe", properties: {}},
-      ],
-    },
-    {
-      name: "Rivers",
-      features: [
-        { id: 1, label: "Amazon River", description: "The largest river by discharge in the world",  properties: {} },
-        { id: 2, label: "Nile River", description: "The longest river in the world", properties: {} },
-      ],
-    },
-    {
-      name: "Estuaries",
-      features: [
-        { id: 1, label: "Chesapeake Bay", description: "Located on the east coast of the US",  properties: {} },
-        { id: 2, label: "San Francisco Bay", description: "Located in Northern California", properties: {}}
-      ],
-    },
-  ]);
 
   return (
     <div>
@@ -134,13 +93,17 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
         </CalciteSegmentedControl>
         {/* Main Section */}
         <section>
+            <CalciteButton iconStart="reset" onClick={handleClearSelection}>
+              Clear Selection
+            </CalciteButton>
             {activeView === 'Identify' && (
                 <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
             )}
             {activeView === 'Results' && (
-                <FeatureList mapView={mapView} data={results} onClearSelection={handleClearSelection}/>
+                <FeatureList mapView={mapView} data={results}/>
                 // <FeatureList layers={layers} onClearSelection={handleClearSelection} />
             )}
+
         </section>
     </div>
   );
