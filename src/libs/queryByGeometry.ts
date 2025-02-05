@@ -1,18 +1,19 @@
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import MapImageLayer from "@arcgis/core/layers/MapImageLayer";
 
-interface QueryResult {
+export interface QueryResult {
   objectId: number;
   attributes: Record<string, any>;
   geometry?: __esri.Geometry;
 }
 
-interface LayerQueryResults {
+export interface LayerQueryResults {
     layerName: string;
     layer: __esri.FeatureLayer;
     results: QueryResult[];
-  }
+}
 
-export async function queryByGeometry(
+export default async function queryByGeometry(
   mapView: __esri.MapView,
   geometry: __esri.Geometry,
   onlyVisible: boolean
@@ -20,9 +21,11 @@ export async function queryByGeometry(
     const resultsByLayer: LayerQueryResults[] = [];
 
     async function querySublayer(layer: __esri.Sublayer) {
+        // TODO: Research the SubLayer QueryTask
         if (!layer.url || (onlyVisible && !layer.visible)) return;
 
         try {
+            // Creating a new FeatureLayer from the URL
             const featureLayer = new FeatureLayer({ url: layer.url });
 
             const query = featureLayer.createQuery();
@@ -38,6 +41,7 @@ export async function queryByGeometry(
                 layer: featureLayer,
                 results: result.features.map(feature => ({
                     objectId: feature.attributes[featureLayer.objectIdField],
+                    popupTemplate: layer.popupTemplate,
                     attributes: feature.attributes,
                     geometry: feature.geometry
                 })),
@@ -48,20 +52,24 @@ export async function queryByGeometry(
         }
     }
 
-    async function traverseLayers(layer: __esri.Layer) {
-        if ("sublayers" in layer && layer.sublayers) {
-            for (const sublayer of layer.sublayers.items) {
-                await traverseLayers(sublayer);
+    async function traverseLayers(layer: __esri.MapImageLayer) {
+        const allLayers = layer.allSublayers.toArray(); // Assuming this returns an array
+
+        allLayers.filter( async (sublayer : __esri.Sublayer) => {
+            if (!sublayer.sublayers) {
+                await querySublayer(sublayer);
             }
-        } else if ("url" in layer && layer.url) {
-        await querySublayer(layer as __esri.Sublayer);
+        } );
+    }
+
+    for (const layer of mapView.map.layers.toArray()) {
+        console.log(layer)
+        // TODO: Handle All LayerTypes 
+        if (layer instanceof MapImageLayer) {
+            await traverseLayers(layer);
         }
     }
 
-    for (const layer of mapView.map.layers.items) {
-        await traverseLayers(layer);
-    }
-
-    console.log(resultsByLayer)
     return resultsByLayer;
 }
+

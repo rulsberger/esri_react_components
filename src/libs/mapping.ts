@@ -24,9 +24,28 @@ export async function init(container: HTMLDivElement) {
     container,
     center: [-122.465973, 47.258728],
     zoom: 9,
+    popup: {
+      dockEnabled: true,
+      dockOptions: {
+        position: "top-right",
+        breakpoint: false
+      }
+    }
   });
 
   app.view = view;
+  
+  // view.on("click", (event) => {
+  //   console.log('click')
+  //   const mapPoint = event.mapPoint;
+  //   if (mapPoint) {
+  //     view.openPopup({
+  //       title: "Clicked Location",
+  //       content: `X: ${mapPoint?.x}, Y: ${mapPoint?.y}`,
+  //       location: mapPoint
+  //     });
+  //   }
+  // });
 
   return view;
 }

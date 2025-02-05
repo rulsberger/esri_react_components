@@ -16,6 +16,7 @@ import {
 
 import Point from "@arcgis/core/geometry/Point";
 import Polygon from "@arcgis/core/geometry/Polygon.js";
+import Polyline from "@arcgis/core/geometry/Polyline";
 
 interface QueryResult {
   objectId: number;
@@ -32,25 +33,62 @@ interface LayerQueryResults {
 interface FeatureListProps {
   data: LayerQueryResults[];
   mapView: __esri.MapView;
-  onClearSelection: () => void;
+}
+
+function getPolylineCenter(polyline: __esri.Polyline): __esri.Point | null {
+  if (!polyline || polyline.paths.length === 0) return null;
+
+  let longestSegmentLength = 0;
+  let centerPoint: Point | null = null;
+
+  // Loop through paths and segments
+  for (const path of polyline.paths) {
+    for (let i = 0; i < path.length - 1; i++) {
+      const [x1, y1] = path[i];
+      const [x2, y2] = path[i + 1];
+
+      // Compute segment length
+      const segmentLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+      // If this is the longest segment so far, update the center
+      if (segmentLength > longestSegmentLength) {
+        longestSegmentLength = segmentLength;
+
+        // Midpoint of the segment
+        const centerX = (x1 + x2) / 2;
+        const centerY = (y1 + y2) / 2;
+
+        centerPoint = new Point({
+          x: centerX,
+          y: centerY,
+          spatialReference: polyline.spatialReference,
+        });
+      }
+    }
+  }
+
+  return centerPoint;
 }
 
 function getBestCenterPoint(geometry: __esri.Geometry) {
   if (geometry.type === "point") {
-    return geometry;
+    const point = new Point(geometry);
+    // const projectedPoint = projection.project(geometry, new SpatialReference({ wkid: 3857 }));
+    return point;
   }
   if (geometry.type === "polygon") {
     const polygon = new Polygon(geometry);
+    // const projectedPoint = projection.project(polygon, new SpatialReference({ wkid: 3857 }));
     return polygon.centroid || polygon.extent.center;
   }
   if (geometry.type === "polyline") {
-    // Handle midpoint logic for polyline here if required
-    return null;
+    const polyline = new Polyline(geometry);
+    return getPolylineCenter(polyline);
   }
   throw new Error("Unsupported geometry type.");
 }
 
-const FeatureList: React.FC<FeatureListProps> = ({ data, mapView }) => {
+const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -64,7 +102,15 @@ const FeatureList: React.FC<FeatureListProps> = ({ data, mapView }) => {
   const totalFeatures = data.reduce((count, layer) => count + layer.results.length, 0);
 
   function openPopupAtGeometry(mapView: __esri.MapView, feature: QueryResult) {
-    const pointGeom = getBestCenterPoint(feature.geometry);
+    const geometry = feature.geometry;
+  
+    if (!geometry) {
+      console.warn("Feature has no geometry");
+      return;
+    }
+  
+    const pointGeom = getBestCenterPoint(geometry);
+  
     if (pointGeom) {
       mapView.openPopup({
         title: "Feature Details",
@@ -134,4 +180,4 @@ const FeatureList: React.FC<FeatureListProps> = ({ data, mapView }) => {
   );
 };
 
-export default FeatureList;
+export default FeatureListWidget;

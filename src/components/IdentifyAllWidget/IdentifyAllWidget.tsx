@@ -1,8 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
-import DrawWidget from "../DrawWidgets/DrawWidget";
-import FeatureList from "../FeatureList/FeatureList";
-import { queryByGeometry } from "../../libs/queryByGeometry"
-
+import React, { useEffect, useState } from "react";
+import DrawWidget from "../DrawWidget/DrawWidget";
+import FeatureListWidget from "../FeatureListWidget/FeatureListWidget";
+import queryByGeometry, {LayerQueryResults} from "../../libs/queryByGeometry"
+  
+import "@esri/calcite-components/dist/components/calcite-button.js";
+import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
+import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
 import { 
   CalciteButton,
   CalciteSegmentedControl,
@@ -10,30 +13,8 @@ import {
   } from "@esri/calcite-components-react";
 
 
-interface FeatureProperties {
-    [key: string]: string; // Each feature can have multiple key-value pairs, where key is a string, and value is a string
-  }
-
-interface Feature {
-    id: number;
-    label: string;
-    description: string
-    properties: FeatureProperties;
-  }
-  
-interface Layer {
-    name: string;
-    features: Feature[];
-}
-  
-interface FeatureListProps {
-    layers: Layer[];
-    onClearSelection: () => void;
-}
-
-const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
+const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
   const [activeView, setActiveView] = useState("Identify");
-  const [geometry, setGeometry] = useState<__esri.Geometry | null>(null);
   const [results, setResults] = useState<LayerQueryResults[]>([])
 
   // Track mapView readiness and initialize GeometryManager
@@ -69,7 +50,6 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
       console.log("Querying visible layers only");
     }
 
-    setGeometry(geom); // Store the geometry in state
     queryByGeometry(mapView, geom, onlyVisibleLayers).then(setResults);
     setActiveView('Results')
   };
@@ -100,8 +80,7 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
                 <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
             )}
             {activeView === 'Results' && (
-                <FeatureList mapView={mapView} data={results}/>
-                // <FeatureList layers={layers} onClearSelection={handleClearSelection} />
+                <FeatureListWidget mapView={mapView} data={results}/>
             )}
 
         </section>
@@ -109,4 +88,4 @@ const IdentifyAll: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
   );
 };
 
-export default IdentifyAll;
+export default IdentifyAllWidget;

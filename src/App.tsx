@@ -9,13 +9,12 @@ import {
     CalcitePanel,
   } from "@esri/calcite-components-react";
 
-import IdentifyAll from "./components/IdentifyAll/IdentifyAll";
+import IdentifyAllWidget from "./components/IdentifyAllWidget/IdentifyAllWidget";
 
 
 export default function App() {
   const mapDiv = useRef<HTMLDivElement>(null);
   const [mapView, setMapView] = useState<__esri.MapView | null>(null); // State to store MapView
-  const [loading, setLoading] = useState(true);  // State to manage loading state
 
   useEffect(() => {
     let cleanupFn: () => void; // To store the cleanup function
@@ -25,7 +24,6 @@ export default function App() {
         const mapping = await import("./libs/mapping");
         const view = await mapping.init(mapDiv.current!); // Initialize the MapView
         setMapView(view); // Store the MapView in state
-        window.mapView = view;  // Make mapView available globally in the console
         cleanupFn = mapping.cleanup; // Save the cleanup function for later
       } catch (error) {
         console.error("Error initializing map:", error);
@@ -42,11 +40,10 @@ export default function App() {
         <CalciteShellPanel           
             slot="panel-start"
             position="start"
-            id="left-shell-panel"
-            widthScale="2">
+            id="left-shell-panel">
             <CalcitePanel heading="Identify All">
             {mapView ? (
-              <IdentifyAll mapView={mapView} />
+              <IdentifyAllWidget mapView={mapView} />
             ) : (
               <p>Loading map...</p>  // Fallback UI while the map initializes
             )}
