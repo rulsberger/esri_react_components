@@ -1,4 +1,3 @@
-// import ArcGISMap from "@arcgis/core/Map";
 import WebMap from "@arcgis/core/WebMap";
 import MapView from "@arcgis/core/views/MapView";
 

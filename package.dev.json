@@ -13,16 +13,15 @@
   },
   "dependencies": {
     "@arcgis/core": "^4.31.6",
+    "@esri/calcite-components": "^2.13.2",
     "@esri/calcite-components-react": "^2.13.2",
     "@tailwindcss/vite": "^4.0.0",
-    "ncp": "^2.0.0",
-    "path": "^0.12.7",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwindcss": "^4.0.0",
-    "vite-plugin-dts": "^4.5.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "ncp": "^2.0.0",
+    "path": "^0.12.7",
     "@eslint/js": "^9.17.0",
     "@types/node": "^22.10.7",
     "@types/react": "^18.3.18",

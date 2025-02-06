@@ -24,6 +24,7 @@ export default function App() {
         const mapping = await import("./libs/mapping");
         const view = await mapping.init(mapDiv.current!); // Initialize the MapView
         setMapView(view); // Store the MapView in state
+        window.mapView = view; 
         cleanupFn = mapping.cleanup; // Save the cleanup function for later
       } catch (error) {
         console.error("Error initializing map:", error);
