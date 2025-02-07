@@ -6,18 +6,35 @@ import queryByGeometry, {LayerQueryResults} from "../../libs/queryByGeometry"
 import "@esri/calcite-components/dist/components/calcite-button.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
+import "@esri/calcite-components/dist/components/calcite-loader.js";
 import { 
   CalciteButton,
   CalciteSegmentedControl,
-  CalciteSegmentedControlItem
+  CalciteSegmentedControlItem,
+  CalciteLoader
   } from "@esri/calcite-components-react";
+
+export enum ReadyState {
+  Idle = "Idle",
+  Loading = "Loading",
+  Success = "Success",
+  Error = "Error",
+}
+
+export enum ActiveView {
+  Identify = "Identify",
+  Results = "Results"
+}
 
 
 const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
-  const [activeView, setActiveView] = useState("Identify");
+  const [readyState, setReadyState] = useState<ReadyState>(ReadyState.Idle);
+  const [activeView, setActiveView] = useState<ActiveView>(ActiveView.Identify);
+  const [queryGeometry, setQueryGeometry] = useState<__esri.Geometry | null>(null);
+  const [onlyVisibleLayers, setOnlyVisibleLayers] = useState<boolean>(true);
   const [results, setResults] = useState<LayerQueryResults[]>([])
 
-  // Track mapView readiness and initialize GeometryManager
+  // Track mapView readiness
   useEffect(() => {
     const initializeIdentifyAll = async () => {
       try {
@@ -36,23 +53,37 @@ const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) =
   
   }, [mapView]);
 
+  useEffect(() => {
+    const runQuery = async () => {
+      if (!queryGeometry) return;
+  
+      setReadyState(ReadyState.Loading);
+      try {
+        const results = await queryByGeometry(mapView, queryGeometry, onlyVisibleLayers);
+        setResults(results);
+        setReadyState(ReadyState.Success);
+      } catch (error) {
+        console.error("Error querying features:", error);
+        setReadyState(ReadyState.Error);
+      }
+    };
+    runQuery();
+  }, [queryGeometry, onlyVisibleLayers]); 
+
   const handleClearSelection = () => {
-    console.log("Clear Selection");
     setResults([]);
     mapView.graphics.removeAll();
   };
   
   // Callback to handle the drawn geometry from DrawWidget
   const handleOnDrawComplete = (geom: __esri.Geometry, onlyVisibleLayers: boolean) => {
+    // Clear the Results
     setResults([]);
-    console.log("Geometry received in IdentifyAll:", geom);
-    if (onlyVisibleLayers) {
-      console.log("Querying visible layers only");
-    }
-
-    queryByGeometry(mapView, geom, onlyVisibleLayers).then(setResults);
-    setActiveView('Results')
+    setQueryGeometry(geom)
+    setOnlyVisibleLayers(onlyVisibleLayers);
   };
+
+  // TODO: if there is a drawing and the user clicks the visible layers toggle, we should run the query again
 
   return (
     <div>
@@ -76,12 +107,20 @@ const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) =
             <CalciteButton iconStart="reset" onClick={handleClearSelection}>
               Clear Selection
             </CalciteButton>
-            {activeView === 'Identify' && (
+            {activeView === ActiveView.Identify && (
                 <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
             )}
-            {activeView === 'Results' && (
-                <FeatureListWidget mapView={mapView} data={results}/>
-            )}
+            {activeView === ActiveView.Results && 
+              (readyState === ReadyState.Success ? (
+                <FeatureListWidget data={results} mapView={mapView}/>
+              ) : readyState === ReadyState.Loading ? (
+                <CalciteLoader label='Querying by Draw Geometry...' type="indeterminate" />
+              ) : readyState === ReadyState.Error ? (
+                <p>Error loading features.</p>
+              ) : (
+                <FeatureListWidget data={results} mapView={mapView}/>
+              ))
+            }
 
         </section>
     </div>
