@@ -81,13 +81,13 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     const action = drawRef.current.create(toolType, { mode: "click" });
 
     // Manage vertices and interactive rendering
-    action.on("vertex-add", (evt) => updateDrawing(evt.vertices, toolType, spatialReference));
-    action.on("cursor-update", (evt) => updateDrawing(evt.vertices, toolType, spatialReference));
-    action.on("vertex-remove", (evt) => updateDrawing(evt.vertices, toolType, spatialReference));
+    action.on("vertex-add", (evt) => updateDrawing(evt.vertices, toolType));
+    action.on("cursor-update", (evt) => updateDrawing(evt.vertices, toolType));
+    action.on("vertex-remove", (evt) => updateDrawing(evt.vertices, toolType));
 
     // Finalize geometry on completion
     action.on("draw-complete", (evt) => {
-      const geometry = createGeometry(evt.vertices, toolType, spatialReference);
+      const geometry = createGeometry(evt.vertices, toolType);
       if (geometry) {
         const graphic = new Graphic({
           geometry,
@@ -104,7 +104,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
 
     graphicsLayer.removeAll(); // Clear previous graphics
 
-    const geometry = createGeometry(vertices, toolType, spatialReference);
+    const geometry = createGeometry(vertices, toolType);
     if (geometry) {
       const graphic = new Graphic({
         geometry,
