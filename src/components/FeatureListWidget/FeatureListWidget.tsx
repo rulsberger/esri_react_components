@@ -118,8 +118,8 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
               {thisLayer.results.map((result) => (
                 <CalciteListItem
                   key={`${thisLayer.layerName}_${result.objectId}`}
-                  label={`${thisLayer.layer.popupTemplate.title}`} //TODO: Fix this to show the actual title
-                  value={`${thisLayer.layer.popupTemplate.title}`} //TODO: Fix this to show the actual title
+                  label={`${thisLayer.layerName}: ${result.objectId}`} //TODO: Fix this to show the actual title
+                  value={`${thisLayer.layerName} ${result.objectId}`} //TODO: Fix this to show the actual title
                   onClick={() => selectFeatureByObjectId(mapView, thisLayer.layer, result.objectId)}
                 >
                   <CalciteAction
