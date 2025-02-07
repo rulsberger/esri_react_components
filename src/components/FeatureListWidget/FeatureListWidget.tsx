@@ -29,6 +29,12 @@ interface FeatureListProps {
   mapView: __esri.MapView;
 }
 
+export enum CalciteListItemAction {
+  OpenPopUp = "OpenPopUp",
+  ZoomToFeature = "ZoomToFeature",
+  Select = "Select"
+}
+
 const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
   const [totalLayers, setTotalLayers] = useState<number>(0);
   const [totalFeatures, setTotalFeatures] = useState<number>(0);
@@ -46,12 +52,11 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   }, [data]);
 
-  function openPopupAtGeometry(mapView: __esri.MapView) {
+  function openPopup(mapView: __esri.MapView) {
     if (!selectedFeature) return;
       // Open popup at feature location
       mapView.openPopup({
-        features: [selectedFeature],
-        location: selectedFeature.geometry,
+        features: [selectedFeature]
       });
   }
 
@@ -66,7 +71,11 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     layer: __esri.FeatureLayer,
     objectId: number
   ) => {
+    // TODO: If Popup is already Open, then update the popUp.
+    // Reset the Selected Feature
+    setSelectedFeature(null)
     try {
+      console.log(mapView)
       // Define query
       const query = layer.createQuery();
       query.objectIds = [objectId];
@@ -82,8 +91,8 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
   
         // Highlight the feature
         // TODO: Fix the highlighting, it's not working
-        const layerView = await mapView.whenLayerView(layer);
-        const highlightHandle = layerView.highlight(feature);
+        // const layerView = await mapView.whenLayerView(layer);
+        // layerView.highlight(feature);
 
         // TODO: Add a way to clear the highlight, especially if the clear selection button is clicked
         // TODO: Turn on Layer Visibility if it's not visible
@@ -95,6 +104,18 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
       console.error("Error selecting feature:", error);
     }
   };
+
+  const handleSelectAndAction = async (action: CalciteListItemAction, mapView: __esri.MapView, layer: __esri.FeatureLayer, objectId: number) => {
+    if (action === CalciteListItemAction.Select) {
+      await selectFeatureByObjectId(mapView, layer, objectId);
+      // IF the Popup is open, then open the popup. 
+    } else if (action === CalciteListItemAction.OpenPopUp) {
+      await selectFeatureByObjectId(mapView, layer, objectId).then(() => openPopup(mapView));
+    } else if (action === CalciteListItemAction.ZoomToFeature) {
+      await selectFeatureByObjectId(mapView, layer, objectId).then(() => zoomToGeometry(mapView));
+    }
+  }
+
   
   return (
     <section>
@@ -120,19 +141,19 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
                   key={`${thisLayer.layerName}_${result.objectId}`}
                   label={`${thisLayer.layerName}: ${result.objectId}`} //TODO: Fix this to show the actual title
                   value={`${thisLayer.layerName} ${result.objectId}`} //TODO: Fix this to show the actual title
-                  onClick={() => selectFeatureByObjectId(mapView, thisLayer.layer, result.objectId)}
+                  onCalciteListItemSelect={() => handleSelectAndAction(CalciteListItemAction.Select, mapView, thisLayer.layer, result.objectId)}
                 >
                   <CalciteAction
                     slot="actions-start"
                     icon="information"
                     text={`Information for ${result.objectId}`}
-                    onClick={() => openPopupAtGeometry(mapView)}
+                    onClick={() => handleSelectAndAction(CalciteListItemAction.OpenPopUp, mapView, thisLayer.layer, result.objectId)}
                   />
                   <CalciteAction
                     slot="actions-end"
                     icon="zoom-to-object"
                     text={`Zoom to ${result.objectId}`}
-                    onClick={() => zoomToGeometry(mapView)}
+                    onClick={() => handleSelectAndAction(CalciteListItemAction.ZoomToFeature, mapView, thisLayer.layer, result.objectId)}
                   />
                 </CalciteListItem>
               ))}
