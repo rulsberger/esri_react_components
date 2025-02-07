@@ -92,12 +92,12 @@ const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) =
             <CalciteSegmentedControlItem 
                 value="Identify"
                 {...(activeView === "Identify" ? { checked: true } : {})}
-                onClick={() => setActiveView('Identify')}
+                onClick={() => setActiveView(ActiveView.Identify)}
             >Identify</CalciteSegmentedControlItem>
             <CalciteSegmentedControlItem
                 value="Results"
                 {...(activeView === "Results" ? { checked: true } : {})}
-                onClick={() => setActiveView('Results')}
+                onClick={() => setActiveView(ActiveView.Results)}
             >
                 Results
             </CalciteSegmentedControlItem>
