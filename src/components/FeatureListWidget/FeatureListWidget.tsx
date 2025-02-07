@@ -85,6 +85,9 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
         const layerView = await mapView.whenLayerView(layer);
         const highlightHandle = layerView.highlight(feature);
 
+        // TODO: Add a way to clear the highlight, especially if the clear selection button is clicked
+        // TODO: Turn on Layer Visibility if it's not visible
+
       } else {
         console.warn("No feature found with the specified ObjectID.");
       }
