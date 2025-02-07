@@ -21,12 +21,13 @@ export default async function queryByGeometry(
     const resultsByLayer: LayerQueryResults[] = [];
 
     async function querySublayer(layer: __esri.Sublayer) {
-        // TODO: Research the SubLayer QueryTask
+        // TODO: Research the SubLayer QueryTask I should be able to just get the LayerView Returned and use the queryFeatures method on a layer that already exists.
         if (!layer.url || (onlyVisible && !layer.visible)) return;
 
         try {
             // Creating a new FeatureLayer from the URL
             const featureLayer = new FeatureLayer({ url: layer.url });
+            featureLayer.popupTemplate = layer.popupTemplate;
 
             const query = featureLayer.createQuery();
             query.geometry = geometry;
@@ -35,13 +36,11 @@ export default async function queryByGeometry(
 
             const result = await featureLayer.queryFeatures(query);
             if (result.features.length > 0) {
-                console.log(`Found ${result.features.length} features in ${layer.title}`);
                 resultsByLayer.push({
                 layerName: layer.title || "Unnamed Layer",
                 layer: featureLayer,
                 results: result.features.map(feature => ({
                     objectId: feature.attributes[featureLayer.objectIdField],
-                    popupTemplate: layer.popupTemplate,
                     attributes: feature.attributes,
                     geometry: feature.geometry
                 })),
@@ -63,7 +62,6 @@ export default async function queryByGeometry(
     }
 
     for (const layer of mapView.map.layers.toArray()) {
-        console.log(layer)
         // TODO: Handle All LayerTypes 
         if (layer instanceof MapImageLayer) {
             await traverseLayers(layer);
