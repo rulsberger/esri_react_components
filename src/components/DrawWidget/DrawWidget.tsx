@@ -25,11 +25,18 @@ interface DrawWidgetProps {
   onDrawComplete: (geometry: __esri.Point | __esri.Polygon | __esri.Polyline,  onlyVisibleLayers: boolean) => void;
 }
 
+export enum ToolType {
+  Point = "point",
+  Polyline = "polyline",
+  Polygon = "polygon",
+}
+
 const DrawWidget: React.FC<DrawWidgetProps> = ({
   mapView,
   onDrawComplete,
 }) => {
   const drawRef = useRef<__esri.Draw | null>(null);
+  const [spatialReference, setSpatialReference] = useState<__esri.SpatialReference | null>(null);
   const [isDrawReady, setIsDrawReady] = useState(false);
   const [graphicsLayer, setGraphicsLayer] = useState< __esri.Collection<Graphic> | null>(null);
   const [activeTool, setActiveTool] = useState<"point" | "polyline" | "polygon" | null>(null);
@@ -42,6 +49,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
         if (mapView) { 
           await mapView.when();
           drawRef.current = new Draw({ view: mapView });
+          setSpatialReference(mapView.spatialReference);
           setGraphicsLayer(mapView.graphics);
           setIsDrawReady(true);
         }
@@ -63,8 +71,8 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
 
 
 
-  const activateTool = (toolType: "point" | "polyline" | "polygon", spatialReference: __esri.SpatialReference) => {
-    if (!drawRef.current || !isDrawReady || !graphicsLayer) {
+  const activateTool = (toolType: ToolType) => {
+    if (!drawRef.current || !isDrawReady || !graphicsLayer || !spatialReference) {
       return;
     }
 
@@ -91,8 +99,8 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     });
   };
 
-  const updateDrawing = (vertices: number[][], toolType: "point" | "polyline" | "polygon", spatialReference: __esri.SpatialReference) => {
-    if (!graphicsLayer) return;
+  const updateDrawing = (vertices: number[][], toolType: ToolType) => {
+    if (!graphicsLayer || !spatialReference) return;
 
     graphicsLayer.removeAll(); // Clear previous graphics
 
@@ -106,11 +114,11 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
     }
   };
 
-  const createGeometry = (vertices: number[][] | number[][][], toolType: "point" | "polyline" | "polygon", spatialReference: __esri.SpatialReference) => {
-    if (vertices.length === 0) return null;
+  const createGeometry = (vertices: number[][] | number[][][], toolType: ToolType) => {
+    if (vertices.length === 0 || !spatialReference) return null;
 
     switch (toolType) {
-      case "point":
+      case ToolType.Point:
         if (!Array.isArray(vertices[0])) return null;
         const pointCoords = vertices as number[][];
         return new Point({
@@ -119,13 +127,13 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
           spatialReference,
         });
   
-      case "polyline":
+      case ToolType.Polyline:
         return new Polyline({
           paths: vertices as number[][][],
           spatialReference,
         });
   
-      case "polygon":
+      case ToolType.Polygon:
         return new Polygon({
           rings: vertices as number[][][],
           spatialReference,
@@ -138,9 +146,9 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
 
 
   
-  const getSymbol = (toolType: "point" | "polyline" | "polygon"): __esri.Symbol => {
+  const getSymbol = (toolType: ToolType): __esri.Symbol => {
     switch (toolType) {
-      case "point":
+      case ToolType.Point:
         return new SimpleMarkerSymbol({
           color: "red",
           size: 8,
@@ -150,13 +158,13 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
           },
         });
   
-      case "polyline":
+      case ToolType.Polyline:
         return new SimpleLineSymbol({
           color: "blue",
           width: 2,
         });
   
-      case "polygon":
+      case ToolType.Polygon:
         return new SimpleFillSymbol({
           color: [0, 0, 255, 0.2],
           outline: {
@@ -184,7 +192,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
               <CalciteSegmentedControlItem
                 value="Point"
                 iconStart="point"
-                onClick={() => activateTool("point", mapView.spatialReference)}
+                onClick={() => activateTool(ToolType.Point)}
                 {...(activeTool === "point" ? { checked: true } : {})}
               >
                 Point
@@ -192,7 +200,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
               <CalciteSegmentedControlItem
                 value="Line"
                 iconStart="line"
-                onClick={() => activateTool("polyline", mapView.spatialReference)}
+                onClick={() => activateTool(ToolType.Polyline)}
                 {...(activeTool === "polyline" ? { checked: true } : {})}
               >
                 Line
@@ -200,7 +208,7 @@ const DrawWidget: React.FC<DrawWidgetProps> = ({
               <CalciteSegmentedControlItem
                 value="Polygon"
                 iconStart="polygon"
-                onClick={() => activateTool("polygon", mapView.spatialReference)}
+                onClick={() => activateTool(ToolType.Polygon)}
                 {...(activeTool === "polygon" ? { checked: true } : {})}
               >
                 Polygon
