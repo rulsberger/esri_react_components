@@ -1,25 +1,12 @@
-import { resolve } from "path";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { viteStaticCopy } from "vite-plugin-static-copy";
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "C:/Development/react_components/node_modules/@esri/calcite-components/dist/calcite/assets",
-          dest: "calcite-assets", 
-        },
-      ],
-    }),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
-      '@arcgis/core': '@arcgis/core',
+      "@arcgis/core": path.resolve("node_modules/@arcgis/core"), // Explicit path
     },
   },
   optimizeDeps: {
@@ -27,19 +14,23 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, "src/main.tsx"),
-      name: "IdentifyAll",
-      formats: ["es", "umd"], // Generate both ES module and UMD formats
-      fileName: (format) => `identifyAll.${format}.js`,
+      entry: {
+        DrawWidget: path.resolve(__dirname, 'src/components/DrawWidget/index.ts'),
+        FeatureListWidget: path.resolve(__dirname, 'src/components/FeatureListWidget/index.ts'),
+        IdentifyAllWidget: path.resolve(__dirname, 'src/components/IdentifyAllWidget/index.ts'),
+      },
+      formats: ['es', 'cjs'], // Generate ES and CommonJS modules
     },
     rollupOptions: {
-      // Specify external dependencies that should not be bundled
-      external: ["react", "react-dom", "@esri/calcite-components-react"],
+      external: ['react', 'react-dom', '@arcgis/core', '@esri/calcite-components-react'], // Prevent bundling of peer dependencies
       output: {
+        entryFileNames: '[name].[format].js',
+        dir: 'dist',
         globals: {
-          react: "React",
-          "react-dom": "ReactDOM",
-          "@esri/calcite-components-react": "CalciteComponentsReact",
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          '@arcgis/core': 'arcgis',
+          '@esri/calcite-components-react': 'calcite',
         },
       },
     },
