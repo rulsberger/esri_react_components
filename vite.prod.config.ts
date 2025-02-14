@@ -4,6 +4,14 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      "@arcgis/core": path.resolve("node_modules/@arcgis/core"), // Explicit path
+    },
+  },
+  optimizeDeps: {
+    exclude: ["@arcgis/core"]
+  },
   build: {
     lib: {
       entry: {

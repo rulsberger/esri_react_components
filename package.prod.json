@@ -1,5 +1,5 @@
 {
-  "name": "pc_web_gis",
+  "name": "@your-scope/identify-all-widget",
   "version": "1.0.0",
   "description": "Reusable components for GIS applications",
   "main": "dist/pc_web_gis.cjs.js",
@@ -23,7 +23,7 @@
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
-    "@arcgis/core": "~4.31.0",
+    "@arcgis/core": "4.31.6",
     "@esri/calcite-components-react": "^2.13.2"
   },
   "devDependencies": {
@@ -35,5 +35,8 @@
     "globals": "^15.14.0",
     "typescript": "~5.6.2",
     "vite": "^6.0.5"
+  },
+  "publishConfig": {
+    "registry": "https://api.bitbucket.org/2.0/repositories/piercecountywa-ss/react_components/npm/"
   }
 }
