@@ -27,12 +27,10 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: {
-        DrawWidget: resolve(__dirname, 'src/components/DrawWidget/index.ts'),
-        FeatureListWidget: resolve(__dirname, 'src/components/FeatureListWidget/index.ts'),
-        IdentifyAllWidget: resolve(__dirname, 'src/components/IdentifyAllWidget/index.ts'),
-      },
-      formats: ['es', 'cjs'], // Generate ES and CommonJS modules
+      entry: resolve(__dirname, "src/main.tsx"),
+      name: "IdentifyAll",
+      formats: ["es", "umd"], // Generate both ES module and UMD formats
+      fileName: (format) => `identifyAll.${format}.js`,
     },
     rollupOptions: {
       // Specify external dependencies that should not be bundled
