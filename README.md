@@ -1,50 +1,135 @@
-# React + TypeScript + Vite
+# React Components Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Project Overview
 
-Currently, two official plugins are available:
+This repo contains refactors of widgets with the intension to increase reusability and align with our goal of developing modular React components for Experience Builder and standalone ESRI Maps SDK applications.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The goal of doing development in this manner is to:
 
-## Expanding the ESLint configuration
+- Reduce code duplication across applications.
+- Make our components usable outside Experience Builder.
+- Future-proof our development as we anticipate potential shifts in ESRI tooling.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Project Structure
 
-- Configure the top-level `parserOptions` property like this:
+- dist/                      # Built files
+- public/                    # Static Files
+- node_modules/              # Node.js modules
+- src/                       # Source files
+  - components/              # React components
+  - libs/                    # Utility libraries
+  - App.tsx                  # Main application file
+  - main.tsx                 # Entry point for the application
+- tests/                     # Test files
+  - unit/                    # Unit tests
+  - integration/             # Integration tests
+  - utils/                   # Test utilities
+- package.json               # Development package.json
+- package.dev.json           # Development package.json (for development branches)
+- package.prod.json          # Production package.json (for deployment)
+- vite.config.ts             # Vite configuration
+- vite.dev.config.ts         # Vite configuration (for development branches)
+- vite.prod.config.ts        # Vite configuration (for deployment)
+- vite.test.config.ts        # Vite test configuration
+- tsconfig.json              # TypeScript configuration
+- README.md                  # Project documentation
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+--- 
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Development Workflow
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+--- 
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Setting Up the Development Environment
+
+1. **Clone the Repository:**
+
+  ```
+  git clone https://github.com/your-repo/react_components.git
+  cd react_components
+  ```
+
+2. **Copy the Development Package.json:**
+
+  ```
+  cp package.dev.json package.json
+  ```
+
+3. **Install Dependencies:**
+
+  ```
+  npm install
+  ```
+
+### Running the Project
+
+To start the development server, run:
+
+  ```
+  npm run dev
+  ```
+
+This will start the Vite development server and open the application in your default browser.
+
+## Running Tests
+
+To run unit tests and integration tests, use:
+
+  ```
+  npm test
+  ```
+
+## ESRI Maps SDK Integration
+
+In the development environment, the project includes code for a simple ESRI Maps SDK application to test and use the components being developed. This part of the application is not accessed when deployed, but it is included in the repository, making the bundle slightly larger.
+
+### Using the ESRI Maps SDK
+
+To test the components with the ESRI Maps SDK:
+
+1. **Ensure the Development Environment is Set Up:**
+
+   Follow the steps in the "Setting Up the Development Environment" section.
+
+2. **Start the Development Server:**
+
+  ```
+  npm run dev
+  ```
+
+3. **Access the Application:**
+
+  Open the application in your browser to interact with the ESRI Maps SDK and test the components.
+
+--- 
+
+## Building the Project
+
+For deployment, switch to the `Deploy` branch and follow these steps:
+
+1. **Copy the Production Package.json:**
+
+  ```
+  cp package.prod.json package.json
+  ```
+
+2. **Install Dependencies:**
+
+  ```
+  npm install
+  ```
+
+3. **Build the Project:**
+
+  ```
+  npm run build
+  ```
+
+4. **Commit the Built Files:**
+
+  ```
+  git add dist/
+  git commit -m "Build for deployment"
+  git push origin Deploy
+  ```
+
