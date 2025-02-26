@@ -8,5 +8,15 @@
     "paths": {
       "@arcgis/core/*": ["./node_modules/@arcgis/core/*"]
     },
+    "target": "ES6",
+    "module": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "react",
+    "types": ["vitest/globals", "node"]
   }
 }

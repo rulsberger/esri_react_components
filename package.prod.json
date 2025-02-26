@@ -1,14 +1,22 @@
 {
-  "name": "@your-scope/identify-all-widget",
+  "name": "@piercecounty/react_components",
   "version": "1.0.0",
   "description": "Reusable components for GIS applications",
-  "main": "dist/pc_web_gis.cjs.js",
-  "module": "dist/pc_web_gis.es.js",
+  "main": "dist/IdentifyAllWidget.cjs.js",
+  "module": "dist/IdentifyAllWidget.es.js",
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/pc_web_gis.es.js",
-      "require": "./dist/pc_web_gis.cjs.js"
+      "import": "./dist/IdentifyAllWidget.es.js",
+      "require": "./dist/IdentifyAllWidget.cjs.js"
+    },
+    "./DrawWidget": {
+      "import": "./dist/DrawWidget.es.js",
+      "require": "./dist/DrawWidget.cjs.js"
+    },
+    "./FeatureListWidget": {
+      "import": "./dist/FeatureListWidget.es.js",
+      "require": "./dist/FeatureListWidget.cjs.js"
     }
   },
   "files": [
@@ -18,7 +26,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest --config vite.test.config.ts"
   },
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0",
@@ -34,7 +43,8 @@
     "@vitejs/plugin-react": "^4.3.4",
     "globals": "^15.14.0",
     "typescript": "~5.6.2",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vitest": "^3.0.6"
   },
   "publishConfig": {
     "registry": "https://api.bitbucket.org/2.0/repositories/piercecountywa-ss/react_components/npm/"

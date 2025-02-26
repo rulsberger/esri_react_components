@@ -12,39 +12,68 @@ import {
   CalciteAction
 } from "@esri/calcite-components-react";
 
+/**
+ * Represents the result of a query.
+ */
 interface QueryResult {
+  /** The object ID of the feature. */
   objectId: number;
+  /** The geometry of the feature. */
   geometry?: __esri.Geometry;
+  /** The attributes of the feature. */
   attributes: Record<string, any>;
 }
 
+/**
+ * Represents the results of a query for a specific layer.
+ */
 export interface LayerQueryResults {
-    layerName: string;
-    layer: __esri.FeatureLayer;
-    results: QueryResult[];
+  /** The name of the layer. */
+  layerName: string;
+  /** The feature layer. */
+  layer: __esri.FeatureLayer;
+  /** The results of the query. */
+  results: QueryResult[];
 }
 
+/**
+ * Props for the FeatureListWidget component.
+ */
 interface FeatureListProps {
+  /** The query results data. */
   data: LayerQueryResults[];
+  /** The map view to use for the widget. */
   mapView: __esri.MapView;
 }
 
+/**
+ * Enum representing the actions for a Calcite list item.
+ */
 export enum CalciteListItemAction {
   OpenPopUp = "OpenPopUp",
   ZoomToFeature = "ZoomToFeature",
   Select = "Select"
 }
 
+/**
+ * FeatureListWidget component.
+ * 
+ * @param {FeatureListProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered component.
+ */
 const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
   const [totalLayers, setTotalLayers] = useState<number>(0);
   const [totalFeatures, setTotalFeatures] = useState<number>(0);
   const [selectedFeature, setSelectedFeature] = useState<__esri.Graphic | null>(null);
 
   useEffect(() => {
+    console.log('FeatureListWidget re-rendered with data:', data);
     if (data && data.length > 0) {
+      console.log('total Layers', data.length);
       const totalLayers = data.length;
       setTotalLayers(totalLayers);
-      const totalFeatures = data.reduce((count, layer) => count + layer.results.length, 0); 
+      const totalFeatures = data.reduce((count, layer) => count + layer.results.length, 0);
+      console.log('total features', totalFeatures);
       setTotalFeatures(totalFeatures);
     } else {
       setTotalLayers(0);
@@ -52,20 +81,37 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   }, [data]);
 
+  /**
+   * Opens a popup at the selected feature's location.
+   * 
+   * @param {__esri.MapView} mapView - The map view to use for the popup.
+   */
   function openPopup(mapView: __esri.MapView) {
     if (!selectedFeature) return;
-      // Open popup at feature location
-      mapView.openPopup({
-        features: [selectedFeature]
-      });
+    // Open popup at feature location
+    mapView.openPopup({
+      features: [selectedFeature]
+    });
   }
 
-  function zoomToGeometry(mapView: __esri.MapView, ) {
+  /**
+   * Zooms to the selected feature's geometry.
+   * 
+   * @param {__esri.MapView} mapView - The map view to use for zooming.
+   */
+  function zoomToGeometry(mapView: __esri.MapView) {
     if (!selectedFeature) return;
 
     mapView.goTo(selectedFeature.geometry.extent.expand(1.5));
   }
 
+  /**
+   * Selects a feature by its object ID.
+   * 
+   * @param {__esri.MapView} mapView - The map view to use for the query.
+   * @param {__esri.FeatureLayer} layer - The feature layer to query.
+   * @param {number} objectId - The object ID of the feature to select.
+   */
   const selectFeatureByObjectId = async (
     mapView: __esri.MapView,
     layer: __esri.FeatureLayer,
@@ -75,7 +121,6 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     // Reset the Selected Feature
     setSelectedFeature(null)
     try {
-      console.log(mapView)
       // Define query
       const query = layer.createQuery();
       query.objectIds = [objectId];
@@ -105,7 +150,20 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   };
 
-  const handleSelectAndAction = async (action: CalciteListItemAction, mapView: __esri.MapView, layer: __esri.FeatureLayer, objectId: number) => {
+  /**
+   * Handles the selection and action for a feature.
+   * 
+   * @param {CalciteListItemAction} action - The action to perform.
+   * @param {__esri.MapView} mapView - The map view to use for the action.
+   * @param {__esri.FeatureLayer} layer - The feature layer to query.
+   * @param {number} objectId - The object ID of the feature to select.
+   */
+  const handleSelectAndAction = async (
+    action: CalciteListItemAction,
+    mapView: __esri.MapView,
+    layer: __esri.FeatureLayer,
+    objectId: number
+  ) => {
     if (action === CalciteListItemAction.Select) {
       await selectFeatureByObjectId(mapView, layer, objectId);
       // IF the Popup is open, then open the popup. 
@@ -114,9 +172,8 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     } else if (action === CalciteListItemAction.ZoomToFeature) {
       await selectFeatureByObjectId(mapView, layer, objectId).then(() => zoomToGeometry(mapView));
     }
-  }
+  };
 
-  
   return (
     <section>
       <div style={{ padding: "16px" }}>
@@ -126,7 +183,6 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
           </CalciteLabel>
         </div>
       </div>
-
 
       {/* Render results or "No Results" message */}
       {totalFeatures > 0 ? (
@@ -144,17 +200,17 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
                   onCalciteListItemSelect={() => handleSelectAndAction(CalciteListItemAction.Select, mapView, thisLayer.layer, result.objectId)}
                 >
                   <CalciteAction
-                    slot="actions-start"
+                    slot="actions-end"
                     icon="information"
                     text={`Information for ${result.objectId}`}
                     onClick={() => handleSelectAndAction(CalciteListItemAction.OpenPopUp, mapView, thisLayer.layer, result.objectId)}
                   />
-                  <CalciteAction
+                  {/* <CalciteAction
                     slot="actions-end"
                     icon="zoom-to-object"
                     text={`Zoom to ${result.objectId}`}
                     onClick={() => handleSelectAndAction(CalciteListItemAction.ZoomToFeature, mapView, thisLayer.layer, result.objectId)}
-                  />
+                  /> */}
                 </CalciteListItem>
               ))}
             </CalciteListItemGroup>

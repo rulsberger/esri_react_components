@@ -1,21 +1,23 @@
 import WebMap from "@arcgis/core/WebMap";
 import MapView from "@arcgis/core/views/MapView";
 
-interface MapApp {
-  view?: MapView;
-}
+const app: { view?: __esri.MapView } = {};
 
-const app: MapApp = {};
-
-export async function init(container: HTMLDivElement) {
+/**
+ * Initializes the MapView.
+ * 
+ * @param {HTMLDivElement} container - The HTML element to contain the MapView.
+ * @returns {Promise<__esri.MapView>} A promise that resolves to the initialized MapView.
+ */
+export async function init(container: HTMLDivElement): Promise<__esri.MapView> {
   if (app.view) {
     app.view.destroy();
   }
 
   const webMap = new WebMap({
-      portalItem: {
-        id: "3f9ccddd607246779286e96847845c3f"
-      }
+    portalItem: {
+      id: "3f9ccddd607246779286e96847845c3f"
+    }
   });
 
   const view = new MapView({
@@ -33,22 +35,13 @@ export async function init(container: HTMLDivElement) {
   });
 
   app.view = view;
-  
-  // view.on("click", (event) => {
-  //   console.log('click')
-  //   const mapPoint = event.mapPoint;
-  //   if (mapPoint) {
-  //     view.openPopup({
-  //       title: "Clicked Location",
-  //       content: `X: ${mapPoint?.x}, Y: ${mapPoint?.y}`,
-  //       location: mapPoint
-  //     });
-  //   }
-  // });
 
   return view;
 }
 
+/**
+ * Cleans up the MapView by destroying it.
+ */
 export function cleanup() {
   app.view?.destroy();
 }

@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
 import DrawWidget from "../DrawWidget/DrawWidget";
 import FeatureListWidget from "../FeatureListWidget/FeatureListWidget";
-import queryByGeometry, {LayerQueryResults} from "../../libs/queryByGeometry"
-  
+import queryByGeometry, { LayerQueryResults } from "../../libs/queryByGeometry";
+
 import "@esri/calcite-components/dist/components/calcite-button.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
 import "@esri/calcite-components/dist/components/calcite-loader.js";
-import { 
+import {
   CalciteButton,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem,
   CalciteLoader
-  } from "@esri/calcite-components-react";
+} from "@esri/calcite-components-react";
 
+/**
+ * Enum representing the ready state of the widget.
+ */
 export enum ReadyState {
   Idle = "Idle",
   Loading = "Loading",
@@ -21,18 +24,34 @@ export enum ReadyState {
   Error = "Error",
 }
 
+/**
+ * Enum representing the active view of the widget.
+ */
 export enum ActiveView {
   Identify = "Identify",
   Results = "Results"
 }
 
+/**
+ * Props for the IdentifyAllWidget component.
+ */
+interface IdentifyAllWidgetProps {
+  /** The map view to use for the widget. */
+  mapView: __esri.MapView;
+}
 
-const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) => {
+/**
+ * IdentifyAllWidget component.
+ * 
+ * @param {IdentifyAllWidgetProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered component.
+ */
+const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.Idle);
   const [activeView, setActiveView] = useState<ActiveView>(ActiveView.Identify);
   const [queryGeometry, setQueryGeometry] = useState<__esri.Geometry | null>(null);
   const [onlyVisibleLayers, setOnlyVisibleLayers] = useState<boolean>(true);
-  const [results, setResults] = useState<LayerQueryResults[]>([])
+  const [results, setResults] = useState<LayerQueryResults[]>([]);
 
   // Track mapView readiness
   useEffect(() => {
@@ -47,10 +66,6 @@ const IdentifyAllWidget: React.FC<{ mapView: __esri.MapView }> = ({ mapView }) =
     };
 
     initializeIdentifyAll();
-
-    return () => {
-    };
-  
   }, [mapView]);
 
   useEffect(() => {
