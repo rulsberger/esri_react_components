@@ -5,7 +5,6 @@ import MapView from '@arcgis/core/views/MapView';
 import '@esri/calcite-components/dist/components/calcite-button.js';
 import {
   CalciteLabel,
-  CalciteBlock,
   CalciteAction
 } from "@esri/calcite-components-react";
 
@@ -87,7 +86,6 @@ const SketchWidget = React.forwardRef<unknown, SketchWidgetProps>(({ view, onDra
   return (
     <div>
       <div className="sketch-widget">
-        <CalciteBlock id="headingBlock" heading="Sketch Tools">
           <div className="menu-container">
             <CalciteLabel layout="inline-space-between" for="drawingTool">
               Drawing Tool:
@@ -103,7 +101,6 @@ const SketchWidget = React.forwardRef<unknown, SketchWidgetProps>(({ view, onDra
               </div>
             </CalciteLabel>
           </div>
-        </CalciteBlock>
       </div>
     </div>
   );

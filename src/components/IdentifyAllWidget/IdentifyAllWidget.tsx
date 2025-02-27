@@ -7,14 +7,15 @@ import "@esri/calcite-components/dist/components/calcite-button.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
 import "@esri/calcite-components/dist/components/calcite-loader.js";
+import "@esri/calcite-components/dist/components/calcite-switch.js";
+import "@esri/calcite-components/dist/components/calcite-label.js";
 import {
-  CalciteBlock,
   CalciteLoader,
   CalciteButton,
   CalciteLabel,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem,
-  CalciteCheckbox
+  CalciteSwitch
 } from "@esri/calcite-components-react";
 
 import './identifyAllWidget.css';
@@ -62,7 +63,7 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
   // Track mapView readiness
   useEffect(() => {
     const initializeIdentifyAll = async () => {
-      try {zx
+      try {
         if (mapView) {
           await mapView.when();
         }
@@ -107,6 +108,10 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
     }
   };
 
+  const handleSwitchChange = (event: CustomEvent) => {
+    setOnlyVisibleLayers(event.detail);
+  };
+
   return (
     <div>
         {/* Segmented Control */}
@@ -127,17 +132,15 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
         {/* Main Section */}
         <section>
           <div className="menu-container">
-            <CalciteBlock id="headingBlock" heading="Identify All Tools">   
               <CalciteButton iconStart="reset" onClick={handleClearSelection}>
                 Reset
               </CalciteButton>
-            </CalciteBlock>
           </div>
           {activeView === ActiveView.Identify && (
               <div className="identify-container">
-                <CalciteLabel layout="inline-space-between" for="visibleLayers" style={{ "padding-left": "10px" }} >
+                <CalciteLabel layout="inline-space-between" for="visibleLayers" style={{ "paddingLeft": "10px" }} >
                   Query Only Visible Layers:
-                  <CalciteCheckbox id="visibleLayers"></CalciteCheckbox>
+                    <CalciteSwitch id="visibleLayers" checked={onlyVisibleLayers} onCalciteSwitchChange={handleSwitchChange}></CalciteSwitch>
                 </CalciteLabel>
                 <SketchWidget ref={sketchWidgetRef} view={mapView} />
                 <CalciteButton iconStart="data-magnifying-glass" onClick={handleQueryClick}>
