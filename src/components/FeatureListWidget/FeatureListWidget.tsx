@@ -12,6 +12,8 @@ import {
   CalciteAction
 } from "@esri/calcite-components-react";
 
+import { FeatureInfo } from "../FeatureInfo";
+
 /**
  * Represents the result of a query.
  */
@@ -199,6 +201,16 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
                   value={`${thisLayer.layerName} ${result.objectId}`} //TODO: Fix this to show the actual title
                   onCalciteListItemSelect={() => handleSelectAndAction(CalciteListItemAction.Select, mapView, thisLayer.layer, result.objectId)}
                 >
+                  <div slot="content-bottom">
+                    <FeatureInfo
+                      mapView={mapView}
+                      layer={thisLayer.layer}
+                      popupTemplate={thisLayer.layer.popupTemplate}
+                      defaultPopupTemplate={thisLayer.layer.popupTemplate}
+                      togglable={true}
+                      expandByDefault={true}
+                    />
+                  </div>
                   <CalciteAction
                     slot="actions-end"
                     icon="information"
