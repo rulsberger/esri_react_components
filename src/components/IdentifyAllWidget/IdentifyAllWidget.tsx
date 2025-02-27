@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import DrawWidget from "../DrawWidget/DrawWidget";
+import SketchWidget from "../SketchWidget/SketchWidget";
 import FeatureListWidget from "../FeatureListWidget/FeatureListWidget";
 import queryByGeometry, { LayerQueryResults } from "../../libs/queryByGeometry";
 
@@ -8,11 +8,15 @@ import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
 import "@esri/calcite-components/dist/components/calcite-loader.js";
 import {
+  CalciteBlock,
   CalciteButton,
+  CalciteLabel,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem,
-  CalciteLoader
+  CalciteCheckbox
 } from "@esri/calcite-components-react";
+
+import './identifyAllWidget.css';
 
 /**
  * Enum representing the ready state of the widget.
@@ -89,14 +93,14 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
     setResults([]);
     mapView.graphics.removeAll();
   };
-  
-  // Callback to handle the drawn geometry from DrawWidget
-  const handleOnDrawComplete = (geom: __esri.Geometry, onlyVisibleLayers: boolean) => {
+
+  const handleQueryClick = () => {
     // Clear the Results
     setResults([]);
     setQueryGeometry(geom)
     setOnlyVisibleLayers(onlyVisibleLayers);
   };
+
 
   // TODO: if there is a drawing and the user clicks the visible layers toggle, we should run the query again
 
@@ -119,23 +123,37 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
         </CalciteSegmentedControl>
         {/* Main Section */}
         <section>
-            <CalciteButton iconStart="reset" onClick={handleClearSelection}>
-              Clear Selection
-            </CalciteButton>
-            {activeView === ActiveView.Identify && (
-                <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
-            )}
-            {activeView === ActiveView.Results && 
-              (readyState === ReadyState.Success ? (
-                <FeatureListWidget data={results} mapView={mapView}/>
-              ) : readyState === ReadyState.Loading ? (
-                <CalciteLoader label='Querying by Draw Geometry...' type="indeterminate" />
-              ) : readyState === ReadyState.Error ? (
-                <p>Error loading features.</p>
-              ) : (
-                <FeatureListWidget data={results} mapView={mapView}/>
-              ))
-            }
+          <div className="menu-container">
+            <CalciteBlock id="headingBlock" heading="Identify All Tools">   
+              <CalciteButton iconStart="reset" onClick={handleClearSelection}>
+                Reset
+              </CalciteButton>
+            </CalciteBlock>
+          </div>
+          {activeView === ActiveView.Identify && (
+              <div className="identify-container">
+                <CalciteLabel layout="inline-space-between">
+                  Query Only Visible Layers:
+                  <CalciteCheckbox checked={onlyVisibleLayers} onCalciteCheckboxChange={(e) => setOnlyVisibleLayers(e.target.checked)}></CalciteCheckbox>
+                </CalciteLabel>
+                <SketchWidget view={mapView}/>
+                <CalciteButton iconStart="search" onClick={handleQueryClick}>
+                Apply
+              </CalciteButton> 
+              </div>
+              // <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
+          )}
+          {activeView === ActiveView.Results && 
+            (readyState === ReadyState.Success ? (
+              <FeatureListWidget data={results} mapView={mapView}/>
+            ) : readyState === ReadyState.Loading ? (
+              <CalciteLoader label='Querying by Draw Geometry...' type="indeterminate" />
+            ) : readyState === ReadyState.Error ? (
+              <p>Error loading features.</p>
+            ) : (
+              <FeatureListWidget data={results} mapView={mapView}/>
+            ))
+          }
 
         </section>
     </div>

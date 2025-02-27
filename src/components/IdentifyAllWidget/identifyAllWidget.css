@@ -1,0 +1,13 @@
+.reset-button {
+    --calcite-button-background-color: white;
+}
+
+.menu-container {
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+  }
+
+.identify-container {
+    padding: 10px;
+  }

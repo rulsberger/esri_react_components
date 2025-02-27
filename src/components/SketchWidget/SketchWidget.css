@@ -1,0 +1,16 @@
+.menu-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.tools-container {
+  display: flex;
+  flex-direction: row;
+  padding-right: 10px; /* Add some padding to the right */
+  border-right: 1px solid #ccc; /* Add a vertical line */
+}
+
+.actions-container {
+    display: flex;
+    flex-direction: row;
+  }
