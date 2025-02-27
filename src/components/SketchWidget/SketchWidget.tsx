@@ -89,9 +89,9 @@ const SketchWidget = React.forwardRef<unknown, SketchWidgetProps>(({ view, onDra
       <div className="sketch-widget">
         <CalciteBlock id="headingBlock" heading="Sketch Tools">
           <div className="menu-container">
-            <CalciteLabel layout="inline-space-between">
+            <CalciteLabel layout="inline-space-between" for="drawingTool">
               Drawing Tool:
-              <div className="tools-container">
+              <div className="tools-container" id='drawingTool'>
                 <CalciteAction icon="pin" text="Draw a point" title="Draw a point" scale="s" slot="control" id="pointBtn" onClick={handleCreatePoint}></CalciteAction>
                 <CalciteAction icon="line" text="Draw a polyline" title="Draw a polyline" scale="s" slot="control" id="polylineBtn" onClick={handleCreatePolyline}></CalciteAction>
                 <CalciteAction icon="polygon" text="Draw a polygon" title="Draw a polygon" scale="s" slot="control" id="polygonBtn" onClick={handleCreatePolygon}></CalciteAction>

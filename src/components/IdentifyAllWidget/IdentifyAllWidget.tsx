@@ -134,7 +134,7 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
           </div>
           {activeView === ActiveView.Identify && (
               <div className="identify-container">
-                <CalciteLabel layout="inline-space-between" for="visibleLayers">
+                <CalciteLabel layout="inline-space-between" for="visibleLayers" style={{ "padding-left": "10px" }} >
                   Query Only Visible Layers:
                   <CalciteCheckbox id="visibleLayers"></CalciteCheckbox>
                 </CalciteLabel>
