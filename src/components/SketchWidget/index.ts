@@ -1,1 +1,1 @@
-import { SketchWidget } from './SketchWidget';
+export { default as SketchWidget } from './SketchWidget';
