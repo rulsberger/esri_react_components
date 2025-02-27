@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import SketchWidget from "../SketchWidget/SketchWidget";
 import FeatureListWidget from "../FeatureListWidget/FeatureListWidget";
-import queryByGeometry, { LayerQueryResults } from "../../libs/queryByGeometry";
+import queryByGeometry from "../../libs/queryByGeometry";
 
 import "@esri/calcite-components/dist/components/calcite-button.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
@@ -9,6 +9,7 @@ import "@esri/calcite-components/dist/components/calcite-segmented-control-item.
 import "@esri/calcite-components/dist/components/calcite-loader.js";
 import {
   CalciteBlock,
+  CalciteLoader,
   CalciteButton,
   CalciteLabel,
   CalciteSegmentedControl,
@@ -56,11 +57,12 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
   const [queryGeometry, setQueryGeometry] = useState<__esri.Geometry | null>(null);
   const [onlyVisibleLayers, setOnlyVisibleLayers] = useState<boolean>(true);
   const [results, setResults] = useState<LayerQueryResults[]>([]);
+  const sketchWidgetRef = useRef<{ geometry: __esri.Geometry | null } | null>(null);
 
   // Track mapView readiness
   useEffect(() => {
     const initializeIdentifyAll = async () => {
-      try {
+      try {zx
         if (mapView) {
           await mapView.when();
         }
@@ -97,12 +99,12 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
   const handleQueryClick = () => {
     // Clear the Results
     setResults([]);
-    setQueryGeometry(geom)
-    setOnlyVisibleLayers(onlyVisibleLayers);
+    const geom = sketchWidgetRef.current?.geometry;
+    if (geom) {
+      console.log(geom)
+      setQueryGeometry(geom);
+    }
   };
-
-
-  // TODO: if there is a drawing and the user clicks the visible layers toggle, we should run the query again
 
   return (
     <div>
@@ -132,14 +134,14 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
           </div>
           {activeView === ActiveView.Identify && (
               <div className="identify-container">
-                <CalciteLabel layout="inline-space-between">
+                <CalciteLabel layout="inline-space-between" for="visibleLayers">
                   Query Only Visible Layers:
-                  <CalciteCheckbox checked={onlyVisibleLayers} onCalciteCheckboxChange={(e) => setOnlyVisibleLayers(e.target.checked)}></CalciteCheckbox>
+                  <CalciteCheckbox id="visibleLayers"></CalciteCheckbox>
                 </CalciteLabel>
-                <SketchWidget view={mapView}/>
-                <CalciteButton iconStart="search" onClick={handleQueryClick}>
-                Apply
-              </CalciteButton> 
+                <SketchWidget ref={sketchWidgetRef} view={mapView} />
+                <CalciteButton iconStart="data-magnifying-glass" onClick={handleQueryClick}>
+                  Apply
+                </CalciteButton> 
               </div>
               // <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
           )}
