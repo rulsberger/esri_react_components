@@ -147,7 +147,6 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
                   Apply
                 </CalciteButton> 
               </div>
-              // <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
           )}
           {activeView === ActiveView.Results && 
             (readyState === ReadyState.Success ? (
