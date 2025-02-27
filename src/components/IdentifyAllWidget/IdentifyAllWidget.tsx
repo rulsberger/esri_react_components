@@ -103,6 +103,7 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
     if (geom) {
       console.log(geom)
       setQueryGeometry(geom);
+      setActiveView(ActiveView.Results);
     }
   };
 
