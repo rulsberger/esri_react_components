@@ -17,7 +17,8 @@ export interface QueryResult {
  */
 export interface LayerQueryResults {
   layerName: string;
-  layer: __esri.FeatureLayer;
+  featureLayer: __esri.FeatureLayer;
+  featureLayerView: __esri.LayerView;
   results: QueryResult[];
 }
 
@@ -94,7 +95,8 @@ export default class QueryService {
 
       const queryResult: LayerQueryResults = {
         layerName: featureLayer.title || "Unnamed Layer",
-        layer: featureLayer,
+        featureLayer: featureLayer,
+        featureLayerView: featureLayerView,
         results: featureSet.features.map((feature) => ({
           objectId: feature.attributes.OBJECTID,
           attributes: feature.attributes,
