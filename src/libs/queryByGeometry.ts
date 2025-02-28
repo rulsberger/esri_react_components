@@ -15,25 +15,42 @@ export default async function queryByGeometry(
 ): Promise<LayerQueryResults[]> {
   const resultsByLayer: LayerQueryResults[] = [];
 
-  async function traverseLayers(layer: __esri.MapImageLayer) {
-    const allLayers = layer.allSublayers.toArray();
+  async function traverseLayers(layer: __esri.Sublayer | __esri.MapImageLayer) {
+    const allLayers = layer.sublayers ? layer.sublayers.toArray() : [];
 
     for (const sublayer of allLayers) {
-      if (!sublayer.sublayers && sublayer.url && (!onlyVisible || sublayer.visible)) {
-        const result = await QueryService.queryFeatureLayer(sublayer.url, geometry, sublayer.popupTemplate);
+      console.log("Sublayer", sublayer);
+      if (sublayer.sublayers && sublayer.sublayers.length > 0) {
+        // Recursively traverse sublayers
+        await traverseLayers(sublayer);
+      } else if (sublayer.url && (!onlyVisible || sublayer.visible)) {
+        console.log("Query Sublayer", sublayer.title, sublayer);
+
+        // Query the sublayer if it has no sublayers
+        const result = await QueryService.queryFeatureLayer(mapView, sublayer, geometry);
         if (result) {
-          console.log(result);
+          console.log("Query Results", result);
           resultsByLayer.push(result);
         }
       }
     }
   }
 
-  for (const layer of mapView.map.layers.toArray()) {
-    if (layer.type === "map-image") {
-      await traverseLayers(layer as __esri.MapImageLayer);
+  // Loop through webmap's operational layers
+  const layerPromises = mapView.map.layers.map(async (layer) => {
+    try {
+      const layerView = await mapView.whenLayerView(layer);
+      if (layer.type === "map-image") {
+        await traverseLayers(layer as unknown as __esri.MapImageLayer);
+      }
+    } catch (error) {
+      console.error(error);
     }
-  }
+  });
 
+  // Wait for all layer promises to complete
+  await Promise.all(layerPromises);
+
+  console.log("Results", resultsByLayer);
   return resultsByLayer;
 }

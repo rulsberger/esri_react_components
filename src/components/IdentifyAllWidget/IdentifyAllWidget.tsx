@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import DrawWidget from "../DrawWidget/DrawWidget";
+import React, { useEffect, useState, useRef } from "react";
+import SketchWidget from "../SketchWidget/SketchWidget";
 import FeatureListWidget from "../FeatureListWidget/FeatureListWidget";
 import queryByGeometry, { LayerQueryResults } from "../../libs/queryByGeometry";
 
@@ -7,12 +7,18 @@ import "@esri/calcite-components/dist/components/calcite-button.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control-item.js";
 import "@esri/calcite-components/dist/components/calcite-loader.js";
+import "@esri/calcite-components/dist/components/calcite-switch.js";
+import "@esri/calcite-components/dist/components/calcite-label.js";
 import {
+  CalciteLoader,
   CalciteButton,
+  CalciteLabel,
   CalciteSegmentedControl,
   CalciteSegmentedControlItem,
-  CalciteLoader
+  CalciteSwitch
 } from "@esri/calcite-components-react";
+
+import './identifyAllWidget.css';
 
 /**
  * Enum representing the ready state of the widget.
@@ -52,6 +58,7 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
   const [queryGeometry, setQueryGeometry] = useState<__esri.Geometry | null>(null);
   const [onlyVisibleLayers, setOnlyVisibleLayers] = useState<boolean>(true);
   const [results, setResults] = useState<LayerQueryResults[]>([]);
+  const sketchWidgetRef = useRef<{ geometry: __esri.Geometry | null } | null>(null);
 
   // Track mapView readiness
   useEffect(() => {
@@ -89,16 +96,21 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
     setResults([]);
     mapView.graphics.removeAll();
   };
-  
-  // Callback to handle the drawn geometry from DrawWidget
-  const handleOnDrawComplete = (geom: __esri.Geometry, onlyVisibleLayers: boolean) => {
+
+  const handleQueryClick = () => {
     // Clear the Results
     setResults([]);
-    setQueryGeometry(geom)
-    setOnlyVisibleLayers(onlyVisibleLayers);
+    const geom = sketchWidgetRef.current?.geometry;
+    if (geom) {
+      console.log(geom)
+      setQueryGeometry(geom);
+      setActiveView(ActiveView.Results);
+    }
   };
 
-  // TODO: if there is a drawing and the user clicks the visible layers toggle, we should run the query again
+  const handleSwitchChange = (event: CustomEvent) => {
+    setOnlyVisibleLayers(event.detail);
+  };
 
   return (
     <div>
@@ -119,23 +131,34 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
         </CalciteSegmentedControl>
         {/* Main Section */}
         <section>
-            <CalciteButton iconStart="reset" onClick={handleClearSelection}>
-              Clear Selection
-            </CalciteButton>
-            {activeView === ActiveView.Identify && (
-                <DrawWidget mapView={mapView} onDrawComplete={handleOnDrawComplete}/>
-            )}
-            {activeView === ActiveView.Results && 
-              (readyState === ReadyState.Success ? (
-                <FeatureListWidget data={results} mapView={mapView}/>
-              ) : readyState === ReadyState.Loading ? (
-                <CalciteLoader label='Querying by Draw Geometry...' type="indeterminate" />
-              ) : readyState === ReadyState.Error ? (
-                <p>Error loading features.</p>
-              ) : (
-                <FeatureListWidget data={results} mapView={mapView}/>
-              ))
-            }
+          <div className="menu-container">
+              <CalciteButton iconStart="reset" onClick={handleClearSelection}>
+                Reset
+              </CalciteButton>
+          </div>
+          {activeView === ActiveView.Identify && (
+              <div className="identify-container">
+                <CalciteLabel layout="inline-space-between" for="visibleLayers" style={{ "paddingLeft": "10px" }} >
+                  Query Only Visible Layers:
+                    <CalciteSwitch id="visibleLayers" checked={onlyVisibleLayers} onCalciteSwitchChange={handleSwitchChange}></CalciteSwitch>
+                </CalciteLabel>
+                <SketchWidget ref={sketchWidgetRef} view={mapView} />
+                <CalciteButton iconStart="data-magnifying-glass" onClick={handleQueryClick}>
+                  Apply
+                </CalciteButton> 
+              </div>
+          )}
+          {activeView === ActiveView.Results && 
+            (readyState === ReadyState.Success ? (
+              <FeatureListWidget data={results} mapView={mapView}/>
+            ) : readyState === ReadyState.Loading ? (
+              <CalciteLoader label='Querying by Draw Geometry...' type="indeterminate" />
+            ) : readyState === ReadyState.Error ? (
+              <p>Error loading features.</p>
+            ) : (
+              <FeatureListWidget data={results} mapView={mapView}/>
+            ))
+          }
 
         </section>
     </div>
