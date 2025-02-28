@@ -1,7 +1,7 @@
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import FeatureEffect from "@arcgis/core/layers/support/FeatureEffect";
-import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
+
 
 /**
  * Represents the result of a query.
@@ -75,7 +75,7 @@ export default class QueryService {
       featureLayerView.featureEffect = featureEffect;
 
       // Wait for the layer view to finish updating
-      await reactiveUtils.when(() => !featureLayerView.dataUpdating);
+      await waitForLayerViewUpdate(featureLayerView);
 
       // Query all the features available for drawing
       const query = featureLayer.createQuery();
@@ -109,4 +109,21 @@ export default class QueryService {
       return null;
     }
   }
+}
+
+/**
+ * Waits for the layer view to finish updating.
+ *
+ * @param featureLayerView - The feature layer view to wait for.
+ * @returns A promise that resolves when the layer view is no longer updating.
+ */
+function waitForLayerViewUpdate(featureLayerView: __esri.FeatureLayerView): Promise<void> {
+  return new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if (!featureLayerView.updating) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 100); // Check every 100ms
+  });
 }
