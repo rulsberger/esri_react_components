@@ -94,7 +94,13 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
 
   const handleClearSelection = () => {
     setResults([]);
-    mapView.graphics.removeAll();
+    // Clear graphics from the sketchGraphicsLayer
+    const graphicsLayer = mapView.map.findLayerById("sketchGraphicsLayer") as __esri.GraphicsLayer;
+    mapView.closePopup();
+    if (graphicsLayer) {
+      graphicsLayer.removeAll();
+    }
+    setActiveView(ActiveView.Identify);
   };
 
   const handleQueryClick = () => {
@@ -103,6 +109,7 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
     const geom = sketchWidgetRef.current?.geometry;
     if (geom) {
       console.log(geom)
+      console.log(mapView)
       setQueryGeometry(geom);
       setActiveView(ActiveView.Results);
     }
