@@ -86,7 +86,7 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
           const symbol = getSymbolForGeometry(result.geometry.type, pointSymbol, polylineSymbol, polygonSymbol);
           if (!symbol) return;
 
-          const graphic = createGraphic(result.geometry, symbol, result.attributes, layer.featureLayer.visible);
+          const graphic = createGraphic(result.geometry, symbol, result.attributes, layer.featureLayer.visible, layer.featureLayer.popupTemplate);
           graphicsLayer.add(graphic);
 
           (result as FeatureListQueryResult).graphic = graphic as __esri.Graphic;
@@ -150,11 +150,12 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   };
 
-  const createGraphic = (geometry: __esri.Geometry, symbol: __esri.Symbol, attributes: any, visible: boolean) => new Graphic({
+  const createGraphic = (geometry: __esri.Geometry, symbol: __esri.Symbol, attributes: any, visible: boolean, popupTemplate: __esri.PopupTemplate) => new Graphic({
     geometry,
     symbol,
     attributes,
-    visible
+    visible,
+    popupTemplate
   });
 
   const openPopup = (mapView: __esri.MapView) => {
@@ -166,73 +167,60 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
 
   const selectFeatureByObjectId = async (mapView: __esri.MapView, layer: __esri.FeatureLayer, objectId: number, graphic: __esri.Graphic) => {
     try {
-      let graphicsLayer = mapView.map.findLayerById("sketchGraphicsLayer") as __esri.GraphicsLayer;
-      console.log(graphic)
-      const query = layer.createQuery();
-      query.objectIds = [objectId];
-      query.outFields = ["*"];
-      query.returnGeometry = true;
-
-      const result = await layer.queryFeatures(query);
-
-      if (result.features.length > 0) {
-        const feature = result.features[0];
-        setSelectedFeature(feature);
-
-        if (graphic) {
-          const yellowSymbol = new SimpleFillSymbol({
-            color: [255, 255, 0, 0.5],
-            outline: {
-              color: [255, 255, 0, 1],
-              width: 2
-            }
-          });
-
-          const uniqueId = `${layer.title}_${objectId}`;
-
-          if (graphic) {
-
-            // Reset symbols of previously selected features
-            Object.keys(graphicState).forEach(id => {
-              if (id !== uniqueId && graphicState[id].original.symbol !== graphicState[id].updated.symbol) {
-                console.log("Resetting symbol for", id);
-                const graphicToReset = graphicsLayer.graphics.find(g => `${layer.title}_${g.attributes.OBJECTID}` === id);
-                console.log("Graphic to reset:", graphicToReset);
-                if (graphicToReset) {
-                  console.log("Resetting symbol for", id);
-                  graphicToReset.symbol = graphicState[id].original.symbol;
-                  setGraphicState(prevState => ({
-                    ...prevState,
-                    [id]: {
-                      ...prevState[id],
-                      updated: {
-                        ...prevState[id].updated,
-                        symbol: prevState[id].original.symbol
-                      }
-                    }
-                  }));
-                }
-              }
-            });
-
-            // Update the symbol of the selected feature
-            graphic.symbol = yellowSymbol;
-
-            setGraphicState(prevState => ({
-              ...prevState,
-              [uniqueId]: {
-                ...prevState[uniqueId],
-                updated: {
-                  ...prevState[uniqueId].updated,
-                  symbol: yellowSymbol
-                }
-              }
-            }));
-          }
+      const yellowSymbol = new SimpleFillSymbol({
+        color: [255, 255, 0, 0.5],
+        outline: {
+          color: [255, 255, 0, 1],
+          width: 2
         }
+      });
 
-      } else {
-        console.warn("No feature found with the specified ObjectID.");
+      let graphicsLayer = mapView.map.findLayerById("sketchGraphicsLayer") as __esri.GraphicsLayer;
+
+      const uniqueId = `${layer.title}_${objectId}`;
+
+      if (graphic) {
+        // Reset symbols of previously selected features
+        Object.keys(graphicState).forEach(id => {
+          if (id !== uniqueId && graphicState[id].original.symbol !== graphicState[id].updated.symbol) {
+            console.log("Resetting symbol for", id);
+            const graphicToReset = graphicsLayer.graphics.find(g => `${layer.title}_${g.attributes.OBJECTID}` === id);
+            console.log("Graphic to reset:", graphicToReset);
+            if (graphicToReset) {
+              console.log("Resetting symbol for", id);
+              graphicToReset.symbol = graphicState[id].original.symbol;
+              setGraphicState(prevState => ({
+                ...prevState,
+                [id]: {
+                  ...prevState[id],
+                  updated: {
+                    ...prevState[id].updated,
+                    symbol: prevState[id].original.symbol
+                  }
+                }
+              }));
+            }
+          }
+        });
+
+        // Update the symbol of the selected feature
+        graphic.symbol = yellowSymbol;
+
+        setGraphicState(prevState => ({
+          ...prevState,
+          [uniqueId]: {
+            ...prevState[uniqueId],
+            updated: {
+              ...prevState[uniqueId].updated,
+              symbol: yellowSymbol
+            }
+          }
+        }));
+
+        // Use a callback to update the selected feature state
+        setSelectedFeature(() => {
+          return graphic;
+        });
       }
     } catch (error) {
       console.error("Error selecting feature:", error);
