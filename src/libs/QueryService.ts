@@ -36,13 +36,11 @@ export default class QueryService {
     try {
       // Create a new FeatureLayer from the URL
       const featureLayer = new FeatureLayer({ url: sublayer.url });
-      console.log("Created new FeatureLayer", featureLayer);
-
       // Copy the popupTemplate from the source layer
       if (sublayer.popupTemplate) {
         featureLayer.popupTemplate = sublayer.popupTemplate.clone();
       }
-      featureLayer.visible = true; 
+      featureLayer.visible = sublayer.visible;
 
       const query = featureLayer.createQuery();
       query.geometry = geometry;
@@ -50,11 +48,8 @@ export default class QueryService {
       query.outFields = ["*"];
 
       const featureSet = await featureLayer.queryFeatures(query);
-      console.log("FeatureSet", featureSet);
 
-      console.log(`Features in ${sublayer.title}:`, featureSet);
       if (featureSet.features.length === 0) {
-        console.log(`No features found in ${sublayer.title}`);
         return null;
       }
 
@@ -68,8 +63,8 @@ export default class QueryService {
         })),
       };
 
-      console.log("Query Results", queryResult);
       return queryResult;
+
     } catch (error) {
       console.error("Error querying feature layer:", error);
       return null;
