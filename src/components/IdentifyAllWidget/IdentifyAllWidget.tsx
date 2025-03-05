@@ -108,8 +108,6 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
     setResults([]);
     const geom = sketchWidgetRef.current?.geometry;
     if (geom) {
-      console.log(geom)
-      console.log(mapView)
       setQueryGeometry(geom);
       setActiveView(ActiveView.Results);
     }
