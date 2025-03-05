@@ -67,6 +67,12 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (selectedFeature) {
+      openPopup(mapView);
+    }
+  }, [selectedFeature]);
+
   const displayResultsOnMapView = (mapView: __esri.MapView, data: LayerQueryResults[]) => {
     let graphicsLayer = mapView.map.findLayerById("sketchGraphicsLayer") as __esri.GraphicsLayer;
     if (!graphicsLayer) {
@@ -218,9 +224,7 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
         }));
 
         // Use a callback to update the selected feature state
-        setSelectedFeature(() => {
-          return graphic;
-        });
+        setSelectedFeature(graphic);
       }
     } catch (error) {
       console.error("Error selecting feature:", error);
@@ -229,9 +233,6 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
 
   const handleSelectAndAction = async (action: CalciteListItemAction, mapView: __esri.MapView, layer: __esri.FeatureLayer, objectId: number, graphic: __esri.Graphic) => {
     await selectFeatureByObjectId(mapView, layer, objectId, graphic);
-    if (action === CalciteListItemAction.Select) {
-      openPopup(mapView);
-    }
   };
 
   const toggleGraphicVisibility = (objectId: number, layerName: string) => {
