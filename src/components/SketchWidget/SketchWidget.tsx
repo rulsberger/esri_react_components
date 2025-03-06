@@ -29,8 +29,8 @@ const SketchWidget = React.forwardRef<unknown, SketchWidgetProps>(({ view, onDra
   useEffect(() => {
     if (!view) return;
 
-    // Create a new GraphicsLayer and add it to the map
-    const graphicsLayer = new GraphicsLayer();
+    // Create a new GraphicsLayer with an ID and add it to the map
+    const graphicsLayer = new GraphicsLayer({ id: 'sketchGraphicsLayer' });
     view.map.add(graphicsLayer);
     graphicsLayerRef.current = graphicsLayer;
 

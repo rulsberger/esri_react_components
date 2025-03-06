@@ -19,17 +19,14 @@ export default async function queryByGeometry(
     const allLayers = layer.sublayers ? layer.sublayers.toArray() : [];
 
     for (const sublayer of allLayers) {
-      console.log("Sublayer", sublayer);
       if (sublayer.sublayers && sublayer.sublayers.length > 0) {
         // Recursively traverse sublayers
         await traverseLayers(sublayer);
       } else if (sublayer.url && (!onlyVisible || sublayer.visible)) {
-        console.log("Query Sublayer", sublayer.title, sublayer);
 
         // Query the sublayer if it has no sublayers
         const result = await QueryService.queryFeatureLayer(mapView, sublayer, geometry);
         if (result) {
-          console.log("Query Results", result);
           resultsByLayer.push(result);
         }
       }
@@ -50,7 +47,5 @@ export default async function queryByGeometry(
 
   // Wait for all layer promises to complete
   await Promise.all(layerPromises);
-
-  console.log("Results", resultsByLayer);
   return resultsByLayer;
 }
