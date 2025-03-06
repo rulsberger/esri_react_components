@@ -160,9 +160,8 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
               <CalciteLoader label='Querying by Draw Geometry...' type="indeterminate" />
             ) : readyState === ReadyState.Error ? (
               <p>Error loading features.</p>
-            ) : (
-              <FeatureListWidget data={results} mapView={mapView}/>
-            ))
+            ) : null
+          )
           }
 
         </section>
