@@ -114,7 +114,8 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
   };
 
   const handleSwitchChange = (event: CustomEvent) => {
-    setOnlyVisibleLayers(event.detail);
+    const target = event.target as HTMLCalciteSwitchElement;
+    setOnlyVisibleLayers(target.checked);
   };
 
   return (
@@ -145,7 +146,11 @@ const IdentifyAllWidget: React.FC<IdentifyAllWidgetProps> = ({ mapView }) => {
               <div className="identify-container">
                 <CalciteLabel layout="inline-space-between" for="visibleLayers" style={{ "paddingLeft": "10px" }} >
                   Query Only Visible Layers:
-                    <CalciteSwitch id="visibleLayers" checked={onlyVisibleLayers} onCalciteSwitchChange={handleSwitchChange}></CalciteSwitch>
+                    <CalciteSwitch 
+                      id="visibleLayers" 
+                      {...(onlyVisibleLayers ? { checked: true } : {})} 
+                      onCalciteSwitchChange={handleSwitchChange}>
+                    </CalciteSwitch>
                 </CalciteLabel>
                 <SketchWidget ref={sketchWidgetRef} view={mapView} />
                 <CalciteButton iconStart="data-magnifying-glass" onClick={handleQueryClick}>
