@@ -92,12 +92,13 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
           const symbol = getSymbolForGeometry(result.geometry.type, pointSymbol, polylineSymbol, polygonSymbol);
           if (!symbol) return;
 
-          const graphic = createGraphic(result.geometry, symbol, result.attributes, layer.featureLayer.visible, layer.featureLayer.popupTemplate);
+          const uniqueId = `${layer.layerName}_${result.objectId}`;
+          const graphic = createGraphic(result.geometry, symbol, result.attributes, layer.featureLayer.visible, layer.featureLayer.popupTemplate, uniqueId);
           graphicsLayer.add(graphic);
 
           (result as FeatureListQueryResult).graphic = graphic as __esri.Graphic;
 
-          const uniqueId = `${layer.layerName}_${result.objectId}`;
+
           setGraphicState(prevState => ({
             ...prevState,
             [uniqueId]: {
@@ -156,10 +157,13 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   };
 
-  const createGraphic = (geometry: __esri.Geometry, symbol: __esri.Symbol, attributes: any, visible: boolean, popupTemplate: __esri.PopupTemplate) => new Graphic({
+  const createGraphic = (geometry: __esri.Geometry, symbol: __esri.Symbol, attributes: any, visible: boolean, popupTemplate: __esri.PopupTemplate, uniqueId: string) => new Graphic({
     geometry,
     symbol,
-    attributes,
+    attributes: {
+      ...attributes,
+      uniqueId: uniqueId
+    },
     visible,
     popupTemplate
   });
@@ -171,7 +175,7 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     });
   };
 
-  const selectFeatureByObjectId = async (mapView: __esri.MapView, layer: __esri.FeatureLayer, objectId: number, graphic: __esri.Graphic) => {
+  const selectFeatureByObjectId = async (mapView: __esri.MapView, layer: __esri.FeatureLayer, uniqueId: string, graphic: __esri.Graphic) => {
     try {
       const yellowSymbol = new SimpleFillSymbol({
         color: [255, 255, 0, 0.5],
@@ -182,15 +186,14 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
       });
 
       let graphicsLayer = mapView.map.findLayerById("sketchGraphicsLayer") as __esri.GraphicsLayer;
-
-      const uniqueId = `${layer.title}_${objectId}`;
+      console.log("Graphics Layer:", graphicsLayer.graphics);
 
       if (graphic) {
         // Reset symbols of previously selected features
         Object.keys(graphicState).forEach(id => {
           if (id !== uniqueId && graphicState[id].original.symbol !== graphicState[id].updated.symbol) {
             console.log("Resetting symbol for", id);
-            const graphicToReset = graphicsLayer.graphics.find(g => `${layer.title}_${g.attributes.OBJECTID}` === id);
+            const graphicToReset = graphicsLayer.graphics.find(g => `${g.attributes.uniqueId}` === id);
             console.log("Graphic to reset:", graphicToReset);
             if (graphicToReset) {
               console.log("Resetting symbol for", id);
@@ -231,8 +234,8 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
     }
   };
 
-  const handleSelectAndAction = async (action: CalciteListItemAction, mapView: __esri.MapView, layer: __esri.FeatureLayer, objectId: number, graphic: __esri.Graphic) => {
-    await selectFeatureByObjectId(mapView, layer, objectId, graphic);
+  const handleSelectAndAction = async (action: CalciteListItemAction, mapView: __esri.MapView, layer: __esri.FeatureLayer, uniqueId: string, graphic: __esri.Graphic) => {
+    await selectFeatureByObjectId(mapView, layer, uniqueId, graphic);
   };
 
   const toggleGraphicVisibility = (objectId: number, layerName: string) => {
@@ -291,7 +294,7 @@ const FeatureListWidget: React.FC<FeatureListProps> = ({ data, mapView }) => {
                   key={`${thisLayer.layerName}_${result.objectId}`}
                   label={getPopupTitle(thisLayer.featureLayer, result)}
                   value={`${thisLayer.layerName} ${getPopupTitle(thisLayer.featureLayer, result)}`}
-                  onCalciteListItemSelect={() => handleSelectAndAction(CalciteListItemAction.Select, mapView, thisLayer.featureLayer, result.objectId, result.graphic as __esri.Graphic)}
+                  onCalciteListItemSelect={() => handleSelectAndAction(CalciteListItemAction.Select, mapView, thisLayer.featureLayer, `${thisLayer.layerName}_${result.objectId}`, result.graphic as __esri.Graphic)}
                 >
                   <CalciteIcon icon="information" scale="s" slot="content-start"></CalciteIcon>
                   <CalciteAction
