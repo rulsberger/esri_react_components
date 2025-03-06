@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import SketchWidget from "../SketchWidget/SketchWidget";
 import FeatureListWidget from "../FeatureListWidget/FeatureListWidget";
-import queryByGeometry, { LayerQueryResults } from "../../libs/queryByGeometry";
+import queryByGeometry from "../../libs/queryByGeometry";
+import { LayerQueryResults } from "../../libs/QueryService";
 
 import "@esri/calcite-components/dist/components/calcite-button.js";
 import "@esri/calcite-components/dist/components/calcite-segmented-control.js";
