@@ -1,4 +1,5 @@
 import QueryService, { LayerQueryResults } from "./QueryService";
+import Sublayer from "@arcgis/core/layers/support/Sublayer.js";
 
 /**
  * Queries features by geometry.
@@ -39,6 +40,15 @@ export default async function queryByGeometry(
       const layerView = await mapView.whenLayerView(layer);
       if (layer.type === "map-image") {
         await traverseLayers(layer as unknown as __esri.MapImageLayer);
+      }
+      else if (layer.type === "feature") {
+        if (layer.url && (!onlyVisible || layer.visible)) {
+          console.log('Found the feature_layer', layer)
+          const result = await QueryService.queryFeatureLayer(mapView, layer as unknown as Sublayer, geometry);
+          if (result) {
+            resultsByLayer.push(result);
+          }
+        }
       }
     } catch (error) {
       console.error(error);
