@@ -37,12 +37,12 @@ export default async function queryByGeometry(
   // Loop through webmap's operational layers
   const layerPromises = mapView.map.layers.map(async (layer) => {
     try {
-      const layerView = await mapView.whenLayerView(layer);
+      await mapView.whenLayerView(layer);
       if (layer.type === "map-image") {
         await traverseLayers(layer as unknown as __esri.MapImageLayer);
       }
       else if (layer.type === "feature") {
-        if (layer.url && (!onlyVisible || layer.visible)) {
+        if (layer && (!onlyVisible || layer.visible)) {
           console.log('Found the feature_layer', layer)
           const result = await QueryService.queryFeatureLayer(mapView, layer as unknown as Sublayer, geometry);
           if (result) {
