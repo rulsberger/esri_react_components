@@ -29,7 +29,8 @@ export async function init(container: HTMLDivElement): Promise<__esri.MapView> {
         }
       }
     },
-    effect: "drop-shadow(-10px, 10px, 6px gray)"
+    effect: "drop-shadow(-10px, 10px, 6px gray)",
+    visible: false
   });
 
   // national park service establishments feature service
@@ -40,13 +41,14 @@ export async function init(container: HTMLDivElement): Promise<__esri.MapView> {
 
   const webMap = new Map({
     basemap: "streets-vector",
+    layers: [states, nps_Establishments]
   })
 
   const view = new MapView({
     map: webMap,
     container,
     center: [-122.465973, 47.258728],
-    zoom: 9,
+    zoom: 6,
     popup: {
       dockEnabled: true,
       dockOptions: {
@@ -57,6 +59,8 @@ export async function init(container: HTMLDivElement): Promise<__esri.MapView> {
   });
 
   app.view = view;
+
+
 
   return view;
 }
