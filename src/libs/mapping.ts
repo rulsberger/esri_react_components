@@ -1,5 +1,6 @@
-import WebMap from "@arcgis/core/WebMap";
+import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
+import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 
 const app: { view?: __esri.MapView } = {};
 
@@ -14,11 +15,32 @@ export async function init(container: HTMLDivElement): Promise<__esri.MapView> {
     app.view.destroy();
   }
 
-  const webMap = new WebMap({
-    portalItem: {
-      id: "3f9ccddd607246779286e96847845c3f"
-    }
+  // set up the states layer. It will be used as the basemap
+  const states = new FeatureLayer({
+    url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/2",
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-fill",
+        color: "#f0ebe4",
+        outline: {
+          color: "#DCDCDC",
+          width: "0.5px"
+        }
+      }
+    },
+    effect: "drop-shadow(-10px, 10px, 6px gray)"
   });
+
+  // national park service establishments feature service
+  const nps_Establishments = new FeatureLayer({
+    portalItem: { id: "d72ab790752142bd9dfb190c79d6582b" }
+  });
+  
+
+  const webMap = new Map({
+    basemap: "streets-vector",
+  })
 
   const view = new MapView({
     map: webMap,
