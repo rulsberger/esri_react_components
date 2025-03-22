@@ -22,14 +22,12 @@ export interface LayerQueryResults {
 /**
  * Queries a FeatureLayer by geometry.
  *
- * @param mapView - The MapView instance.
  * @param sublayer - The sublayer to query.
  * @param geometry - The geometry to use for the query.
  * @returns A promise that resolves to LayerQueryResults or null if no features are found.
  */
 export default class QueryService {
   static async queryFeatureLayer(
-    mapView: __esri.MapView,
     sublayer: __esri.Sublayer,
     geometry: __esri.Geometry
   ): Promise<LayerQueryResults | null> {

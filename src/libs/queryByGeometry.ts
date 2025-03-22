@@ -26,7 +26,7 @@ export default async function queryByGeometry(
       } else if (sublayer.url && (!onlyVisible || sublayer.visible)) {
 
         // Query the sublayer if it has no sublayers
-        const result = await QueryService.queryFeatureLayer(mapView, sublayer, geometry);
+        const result = await QueryService.queryFeatureLayer(sublayer, geometry);
         if (result) {
           resultsByLayer.push(result);
         }
@@ -44,7 +44,7 @@ export default async function queryByGeometry(
       else if (layer.type === "feature") {
         if (layer && (!onlyVisible || layer.visible)) {
           console.log('Found the feature_layer', layer)
-          const result = await QueryService.queryFeatureLayer(mapView, layer as unknown as Sublayer, geometry);
+          const result = await QueryService.queryFeatureLayer(layer as unknown as Sublayer, geometry);
           if (result) {
             resultsByLayer.push(result);
           }
