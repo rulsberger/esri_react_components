@@ -1,6 +1,8 @@
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer'
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
 
 const app: { view?: __esri.MapView } = {};
 
@@ -15,20 +17,17 @@ export async function init(container: HTMLDivElement): Promise<__esri.MapView> {
     app.view.destroy();
   }
 
-  // set up the states layer. It will be used as the basemap
   const states = new FeatureLayer({
     url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/2",
-    renderer: {
-      type: "simple",
-      symbol: {
-        type: "simple-fill",
+    renderer: new SimpleRenderer({
+      symbol: new SimpleFillSymbol({
         color: "#f0ebe4",
         outline: {
           color: "#DCDCDC",
           width: "0.5px"
         }
-      }
-    },
+      })
+    }),
     effect: "drop-shadow(-10px, 10px, 6px gray)",
     visible: false
   });
