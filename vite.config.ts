@@ -1,21 +1,25 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "C:/Development/react_components/node_modules/@esri/calcite-components/dist/calcite/assets",
-          dest: "calcite-assets", 
-        },
-      ],
-    }),
+    ...(mode === "development"
+      ? [
+          viteStaticCopy({
+            targets: [
+              {
+                src: "C:/Development/react_components/node_modules/@esri/calcite-components/dist/calcite/assets",
+                dest: "calcite-assets",
+              },
+            ],
+          }),
+        ]
+      : []),
   ],
   resolve: {
     alias: {
@@ -23,25 +27,20 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ["@arcgis/core"]
+    exclude: ["@arcgis/core"],
   },
   build: {
-    lib: {
-      entry: resolve(__dirname, "src/main.tsx"),
-      name: "IdentifyAll",
-      formats: ["es", "umd"], // Generate both ES module and UMD formats
-      fileName: (format) => `identifyAll.${format}.js`,
-    },
+    outDir: "dist",
     rollupOptions: {
-      // Specify external dependencies that should not be bundled
-      external: ["react", "react-dom", "@esri/calcite-components-react"],
+      input: resolve(__dirname, "index.html"),
+      external: [],
       output: {
         globals: {
           react: "React",
           "react-dom": "ReactDOM",
-          "@esri/calcite-components-react": "CalciteComponentsReact",
+          "@esri/calcite-components-react": "CalciteComponentsReact", // This is needed for UMD
         },
       },
     },
   },
-});
+}));
